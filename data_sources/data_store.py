@@ -2,13 +2,13 @@ import pandas as pd
 
 # ----------------------------------------------------------------------------------------------------------------------
 print("1. Loading Match data (minimized)")
-__past_match_data_min__ = pd.read_excel("H:\\AFL-Data\\afl-reduced_results.xlsx", sheet_name="Data", header=0
+__past_match_data_min__ = pd.read_excel(".\\data_samples\\afl-reduced_results.xlsx", sheet_name="Data", header=0
                                         , dtype=str)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 print("2. Loading Match Ground Name Mappings")
-__afl_ground_names__ = pd.read_excel("H:\\AFL-Data\\afl_ground_names.xlsx", sheet_name="Sheet1", header=0, dtype=str)
+__afl_ground_names__ = pd.read_excel(".\\data_samples\\afl_ground_names.xlsx", sheet_name="Sheet1", header=0, dtype=str)
 __afl_ground_names__ = __afl_ground_names__.fillna('')
 __venues_in_data__ = list(__past_match_data_min__['Venue'].str.lower().unique())
 
@@ -26,7 +26,7 @@ afl_ground_names = __afl_ground_names__.copy()
 
 # ----------------------------------------------------------------------------------------------------------------------
 print("3. Loading Home Ground information")
-__team_home_ground_info__ = pd.read_excel("H:\\AFL-Data\\afl-home-grounds.xlsx", sheet_name="Sheet1", header=0,
+__team_home_ground_info__ = pd.read_excel(".\\data_samples\\afl-home-grounds.xlsx", sheet_name="Sheet1", header=0,
                                           dtype=str)
 __team_home_ground_info__ = __team_home_ground_info__.fillna('')
 
@@ -68,4 +68,7 @@ print("-------------------------------------------------------------------------
 print(f"Total Matches in Data \t: {len(__past_match_data_min__)}")
 print(f"Total Matches in where Home team had Ground Adv: {len(__past_match_data_min__[__past_match_data_min__['Home_Ground_Adv'] == True])}")
 print(f"Total Matches in where Away team had Ground Adv: {len(__past_match_data_min__[__past_match_data_min__['Away_Ground_Adv'] == True])}")
+
+__past_match_data_min__ = __past_match_data_min__.rename(str.lower, axis='columns')
+
 past_match_data_min = __past_match_data_min__.copy()
