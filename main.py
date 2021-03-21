@@ -1,5 +1,6 @@
 from data_sources import set_load_cached
 import pandas as pd
+import datetime as dt
 
 
 set_load_cached(True)
@@ -9,7 +10,7 @@ from utils import elo_getter
 
 
 match_results = data_store.get_cleaned_data()
-
+match_results['date'] = match_results['date'].apply(lambda x: dt.datetime.strptime(x[0:10], '%Y-%m-%d').date())
 
 form_btwn_teams = match_results[['game', 'home_team', 'away_team', 'margin']].copy()
 
@@ -33,4 +34,11 @@ features = features.merge(form_btwn_teams.drop(columns=['margin']), on=['game', 
 
 # ELO
 elos, probs, elo_dict = elo_getter.elo_applier(match_results, 30)
-x=1
+
+one_line_cols = ['game', 'team', 'home_game'] + [col for col in features if col.startswith('f_')]
+
+# # Add our created features - elo, efficiency etc.
+features_one_line = (features.assign(f_elo_home=lambda df: df.game.map(elos).apply(lambda x: x[0]),
+                                     f_elo_away=lambda df: df.game.map(elos).apply(lambda x: x[1])))
+
+r=1
