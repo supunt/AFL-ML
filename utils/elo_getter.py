@@ -45,8 +45,11 @@ def elo_applier(df, k_factor):
         elif result == 0: # Drawn game' update both teams' elo
             new_home_team_elo = home_team_elo + k_factor*(0.5 - prob_win_home)
             new_away_team_elo = away_team_elo + k_factor*(0.5 - prob_win_away)
+        else:
+            new_home_team_elo = home_team_elo
+            new_away_team_elo = away_team_elo
 
-        # Update elos in elo dictionary
+            # Update elos in elo dictionary
         elo_dict[home_team] = new_home_team_elo
         elo_dict[away_team] = new_away_team_elo
 

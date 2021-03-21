@@ -4,13 +4,43 @@ import datetime as dt
 
 
 __cached_file_path__ = 'H:\\temp\\_cached_race_data.csv'
+__next_week_file_path__ = 'H:\\temp\\next-week.xlsx'
+
+team_home_ground_info = None
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def is_home_for_team(team_name, ground):
+    return True if len(team_home_ground_info[
+                           (team_home_ground_info['Name_In_Data'].str.lower() == ground.lower()) &
+                           (team_home_ground_info['Team'].str.lower() == team_name.lower())]) > 0 else False
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def get_next_week_frame(max_game_id_in_history):
+    next_week_data = pd.read_excel(__next_week_file_path__, sheet_name="Data", header=0)
+
+    next_week_data['home_ground_adv'] = next_week_data.apply(lambda r: is_home_for_team(
+        r['Home_Team'], r['Venue']), axis=1)
+    next_week_data['away_ground_adv'] = next_week_data.apply(lambda r: is_home_for_team(
+        r['Away_Team'], r['Venue']), axis=1)
+
+    for index, row in next_week_data.iterrows():
+        next_week_data.loc[index, 'game'] = int(max_game_id_in_history) + int(len(next_week_data) - index)
+
+    next_week_data['Date'] = next_week_data['Date'].apply(lambda x: x.date())
+
+    next_week_data = next_week_data.rename(str.lower, axis='columns')
+
+    return next_week_data
 
 
 def get_cleaned_data():
     if __loading_cached__:
         print('Loading from last cached file')
         past_match_data_min = pd.read_csv(__cached_file_path__, header=0)
-        return past_match_data_min
+
+        return past_match_data_min, get_next_week_frame(past_match_data_min['game'].max())
 
     # ------------------------------------------------------------------------------------------------------------------
     print("1. Loading Match data (minimized)")
@@ -57,18 +87,13 @@ def get_cleaned_data():
                 __team_home_ground_info__.loc[index, 'Name_In_Data'] = selection[0]
                 break
 
+    global team_home_ground_info
     team_home_ground_info = __team_home_ground_info__.copy()
 
-    # ------------------------------------------------------------------------------------------------------------------
-    def is_home_for_team(team_name, ground):
-        return True if len(team_home_ground_info[
-            (team_home_ground_info['Name_In_Data'].str.lower() == ground.lower()) &
-            (team_home_ground_info['Team'].str.lower() == team_name.lower())]) > 0 else False
-
     print("4. Tag Home_Ground_Adv and Away_Ground_Adv in match data")
-    __past_match_data_min__['F_Home_Ground_Adv'] = __past_match_data_min__.apply(lambda r: is_home_for_team(
+    __past_match_data_min__['home_ground_adv'] = __past_match_data_min__.apply(lambda r: is_home_for_team(
         r['Home_Team'], r['Venue']), axis=1)
-    __past_match_data_min__['F_Away_Ground_Adv'] = __past_match_data_min__.apply(lambda r: is_home_for_team(
+    __past_match_data_min__['away_ground_adv'] = __past_match_data_min__.apply(lambda r: is_home_for_team(
         r['Away_Team'], r['Venue']), axis=1)
 
     print("5. Column Lower Case")
@@ -84,8 +109,8 @@ def get_cleaned_data():
     __past_match_data_min__.loc[
         __past_match_data_min__['home_score'] < __past_match_data_min__['away_score'], 'result'] = -1
 
-    __past_match_data_min__['margin'] = abs(__past_match_data_min__['home_score'].astype(int) -
-                                            __past_match_data_min__['away_score'].astype(int))
+    __past_match_data_min__['margin'] = __past_match_data_min__['home_score'].astype(int) - \
+                                        __past_match_data_min__['away_score'].astype(int)
 
     print("7. Set Game Number")
     for index, row in __past_match_data_min__.iterrows():
@@ -103,12 +128,14 @@ def get_cleaned_data():
     print("\n9. Cleaned Data Stats")
     print("--------------------------------------------------------------------------")
     print(f"Total Matches in Data \t: {len(__past_match_data_min__)}")
-    print(f"Total Matches in where Home team had Ground Adv: {len(__past_match_data_min__[__past_match_data_min__['f_home_ground_adv'] == True])}")
-    print(f"Total Matches in where Away team had Ground Adv: {len(__past_match_data_min__[__past_match_data_min__['f_away_ground_adv'] == True])}")
+    print(f"Total Matches in where Home team had Ground Adv: {len(__past_match_data_min__[__past_match_data_min__['home_ground_adv'] == True])}")
+    print(f"Total Matches in where Away team had Ground Adv: {len(__past_match_data_min__[__past_match_data_min__['away_ground_adv'] == True])}")
 
     past_match_data_min = __past_match_data_min__.copy()
 
     print(f"10. Cached File written to {__cached_file_path__}")
     past_match_data_min.to_csv(__cached_file_path__)
 
-    return past_match_data_min
+    return past_match_data_min, get_next_week_frame(past_match_data_min['game'].max())
+
+
