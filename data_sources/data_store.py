@@ -36,11 +36,11 @@ def get_next_week_frame(max_game_id_in_history):
 
 
 def get_cleaned_data():
-    if __loading_cached__:
-        print('Loading from last cached file')
-        past_match_data_min = pd.read_csv(__cached_file_path__, header=0)
-
-        return past_match_data_min, get_next_week_frame(past_match_data_min['game'].max())
+    # if __loading_cached__:
+    #     print('Loading from last cached file')
+    #     past_match_data_min = pd.read_csv(__cached_file_path__, header=0)
+    #
+    #     return past_match_data_min, get_next_week_frame(past_match_data_min['game'].max())
 
     # ------------------------------------------------------------------------------------------------------------------
     print("1. Loading Match data (minimized)")
@@ -78,13 +78,19 @@ def get_cleaned_data():
 
         if len(__afl_ground_names__[__afl_ground_names__['Ground_Name'] == ground_name]) > 0:
             selection = list(__afl_ground_names__[__afl_ground_names__['Ground_Name'] == ground_name]['Name_In_Data'])
+            id_selection = list(__afl_ground_names__[__afl_ground_names__['Ground_Name'] == ground_name]['Ground_Id'])
             __team_home_ground_info__.loc[index, 'Name_In_Data'] = selection[0]
+            __team_home_ground_info__.loc[index, 'Ground_Id'] = id_selection[0]
 
         for i in range(1, 4):
             if len(__afl_ground_names__[__afl_ground_names__[f'Other_Name_{i}'] == ground_name]) > 0:
                 selection = list(__afl_ground_names__[
                                      __afl_ground_names__[f'Other_Name_{i}'] == ground_name]['Name_In_Data'])
+                id_selection = list(__afl_ground_names__[
+                                     __afl_ground_names__[f'Other_Name_{i}'] == ground_name]['Ground_Id'])
+
                 __team_home_ground_info__.loc[index, 'Name_In_Data'] = selection[0]
+                __team_home_ground_info__.loc[index, 'Ground_Id'] = id_selection[0]
                 break
 
     global team_home_ground_info
@@ -112,6 +118,48 @@ def get_cleaned_data():
     __past_match_data_min__['margin'] = __past_match_data_min__['home_score'].astype(int) - \
                                         __past_match_data_min__['away_score'].astype(int)
 
+    __past_match_data_min__ = __past_match_data_min__.merge(afl_ground_names[['Name_In_Data', 'Ground_Id']],
+                                                            left_on='venue',
+                                                            right_on='Name_In_Data',
+                                                            how='inner')
+
+    __past_match_data_min__ = __past_match_data_min__.rename(str.lower, axis='columns')
+
+    __past_match_data_min__ = __past_match_data_min__.drop(columns=['name_in_data'])
+
+    teams = pd.DataFrame(__past_match_data_min__['home_team']).drop_duplicates().reset_index(drop=True)
+    teams = teams.rename(columns={
+        'home_team': 'team'
+    })
+
+    for index, row in teams.iterrows():
+        teams.loc[index, 'team_id'] = index + 1
+
+    __past_match_data_min__['home_team_id'] = 0
+    __past_match_data_min__['away_team_id'] = 0
+
+    __past_match_data_min__ = __past_match_data_min__.merge(teams,
+                                                            how="inner",
+                                                            left_on='home_team',
+                                                            right_on='team')
+
+    __past_match_data_min__ = __past_match_data_min__.rename(columns={
+        'team_id': 'home_team_id'
+    })
+
+    __past_match_data_min__ = __past_match_data_min__.drop(columns=['team'])
+
+    __past_match_data_min__ = __past_match_data_min__.merge(teams,
+                                                            how="inner",
+                                                            left_on='away_team',
+                                                            right_on='team')
+
+    __past_match_data_min__ = __past_match_data_min__.rename(columns={
+        'team_id': 'away_team_id'
+    })
+
+    __past_match_data_min__ = __past_match_data_min__.drop(columns=['team'])
+
     print("7. Set Game Number")
     for index, row in __past_match_data_min__.iterrows():
         __past_match_data_min__.loc[index, 'game'] = int(len(__past_match_data_min__) - index)
@@ -136,6 +184,50 @@ def get_cleaned_data():
     print(f"10. Cached File written to {__cached_file_path__}")
     past_match_data_min.to_csv(__cached_file_path__)
 
-    return past_match_data_min, get_next_week_frame(past_match_data_min['game'].max())
+    next_week_frame = get_next_week_frame(past_match_data_min['game'].max())
+
+    next_week_frame = next_week_frame.merge(afl_ground_names[['Name_In_Data', 'Ground_Id']],
+                                                            left_on='venue',
+                                                            right_on='Name_In_Data',
+                                                            how='inner')
+
+    next_week_frame = next_week_frame.rename(str.lower, axis='columns')
+
+    next_week_frame = next_week_frame.drop(columns=['name_in_data'])
+
+    teams = pd.DataFrame(next_week_frame['home_team']).drop_duplicates().reset_index(drop=True)
+    teams = teams.rename(columns={
+        'home_team': 'team'
+    })
+
+    for index, row in teams.iterrows():
+        teams.loc[index, 'team_id'] = index + 1
+
+    next_week_frame['home_team_id'] = 0
+    next_week_frame['away_team_id'] = 0
+
+    next_week_frame = next_week_frame.merge(teams,
+                                            how="inner",
+                                            left_on='home_team',
+                                            right_on='team')
+
+    next_week_frame = next_week_frame.rename(columns={
+        'team_id': 'home_team_id'
+    })
+
+    next_week_frame = next_week_frame.drop(columns=['team'])
+
+    next_week_frame = next_week_frame.merge(teams,
+                                            how="inner",
+                                            left_on='away_team',
+                                            right_on='team')
+
+    next_week_frame = next_week_frame.rename(columns={
+        'team_id': 'away_team_id'
+    })
+
+    next_week_frame = next_week_frame.drop(columns=['team'])
+
+    return past_match_data_min, next_week_frame
 
 
