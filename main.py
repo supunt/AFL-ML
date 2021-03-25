@@ -25,7 +25,8 @@ print('Creating Features')
 
 form_btwn_teams = get_form_features(match_results)
 features = get_base_feature_frame(match_results)
-features = features.merge(form_btwn_teams.drop(columns=['margin']), on=['game', 'home_team', 'away_team'])
+features = features.merge(form_btwn_teams.drop(columns=['margin']), on=['game', 'home_team', 'away_team',
+                                                                        'home_team_id', 'away_team_id', 'ground_id'])
 
 # ELO
 elos, probs, elo_dict = elo_getter.elo_applier(match_results, 30)
@@ -37,9 +38,12 @@ features_with_elo = (features.assign(f_elo_home=lambda df: df.game.map(elos).app
 features_with_elo = features_with_elo.merge(match_results[['game', 'home_score', 'away_score']].copy(),
                                             on=['game'], how='inner')
 
-features_with_elo = features_with_elo.rename(columns={'margin': 'f_margin',
-                                                      'home_score': 'f_home_score',
-                                                      'away_score': 'f_away_score'})
+features_with_elo = features_with_elo.rename(columns={
+    'margin': 'f_margin',
+    'home_score': 'f_home_score',
+    'away_score': 'f_away_score',
+    'ground_id': 'ground_id'
+})
 
 print('Create test and train data sets')
 # features_with_elo = features_with_elo.merge(match_results[])
@@ -47,11 +51,14 @@ print('Create test and train data sets')
 feature_columns = [col for col in features_with_elo if col.startswith('f_')]
 
 # Create our test set
-test_x = features_with_elo.loc[features_with_elo.season == __year__, ['game'] + feature_columns]
+stat_column_list = ['game', 'home_team_id', 'away_team_id', 'ground_id']
+stat_column_list.extend(feature_columns)
+
+test_x = features_with_elo[features_with_elo.season == __year__][stat_column_list]
 test_y = features_with_elo.loc[features_with_elo.season == __year__, 'result']
 
 # Create our train set
-X = features_with_elo.loc[features_with_elo.season != __year__, ['game'] + feature_columns]
+X = features_with_elo[features_with_elo.season != __year__][stat_column_list]
 Y = features_with_elo.loc[features_with_elo.season != __year__, 'result']
 
 # Scale features
@@ -59,7 +66,7 @@ scaler = StandardScaler()
 X[feature_columns] = scaler.fit_transform(X[feature_columns])
 test_x[feature_columns] = scaler.transform(test_x[feature_columns])
 
-print('Find the best algo')
+# print('Find the best algo')
 # best_algos = find_best_algorithms(X, Y)
 # chosen_algorithms = best_algos.loc[best_algos['Mean Log Loss'] < 0.67]
 # print(chosen_algorithms.to_string())
@@ -110,7 +117,8 @@ match_results_fwd = match_results_fwd.sort_values(by=['game'], ascending=False)
 
 form_btwn_teams_fwd = get_form_features(match_results_fwd)
 features_fwd = get_base_feature_frame(match_results_fwd)
-features_fwd = features_fwd.merge(form_btwn_teams_fwd, on=['game', 'home_team', 'away_team'])
+features_fwd = features_fwd.merge(form_btwn_teams_fwd, on=['game', 'home_team', 'away_team',
+                                                           'home_team_id', 'away_team_id', 'ground_id'])
 
 # ELO
 elos_fwd, probs_fwd, elo_dict_fwd = elo_getter.elo_applier(match_results_fwd, 30)
@@ -131,6 +139,9 @@ features_fwd_with_elo = features_fwd_with_elo.rename(columns={
 
 train_df = features_fwd_with_elo[~features_fwd_with_elo.game.isin(next_week_frame.game)]
 feature_cols = [col for col in train_df if col.startswith('f_') and col]
+feature_cols_og = feature_cols.copy()
+
+feature_cols.extend(['game', 'home_team_id', 'away_team_id', 'ground_id'])
 
 
 train_x = train_df.drop(columns=['result'])
@@ -138,22 +149,16 @@ train_y = train_df.result
 next_round_x = features_fwd_with_elo[features_fwd_with_elo.game.isin(next_week_frame.game)]
 
 scaler = StandardScaler()
-scaler.fit(train_x)
+scaler.fit(train_x[feature_cols_og])
 
-le = preprocessing.LabelEncoder()
-for column_name in train_x.columns:
-    if train_x[column_name].dtype == object:
-        train_x[column_name] = le.fit_transform(train_x[column_name])
-    else:
-        pass
-
-next_round_x[feature_cols] = scaler.transform(next_round_x[feature_cols])
+next_round_x[feature_cols_og] = scaler.transform(next_round_x[feature_cols_og])
 
 bc = ensemble.BaggingClassifier(**__known_best_params__)
 # from sklearn.linear_model import LogisticRegression
 # bc = LogisticRegression()
-bc.fit(train_x, train_y)
-prediction_probs = bc.predict_proba(next_round_x)
+next_round_x['f_margin'] = 0.0
+bc.fit(train_x[feature_cols], train_y)
+prediction_probs = bc.predict_proba(next_round_x[feature_cols])
 
 modelled_home_odds = [1/i[1] for i in prediction_probs]
 modelled_away_odds = [1/i[0] for i in prediction_probs]

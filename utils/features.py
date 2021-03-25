@@ -1,5 +1,5 @@
 def get_base_feature_frame(match_results):
-    features = match_results[['date', 'game', 'home_team', 'away_team',
+    features = match_results[['date', 'game', 'home_team', 'away_team', 'home_team_id', 'away_team_id', 'ground_id',
                               'venue', 'home_ground_adv', 'away_ground_adv', 'result']].copy()
 
     features['season'] = features.apply(lambda s: int(s['date'].strftime('%Y')), axis=1)
@@ -8,7 +8,8 @@ def get_base_feature_frame(match_results):
 
 
 def get_form_features(match_results):
-    form_btwn_teams = match_results[['game', 'home_team', 'away_team', 'margin']].copy()
+    form_btwn_teams = match_results[['game', 'home_team', 'away_team', 'margin',
+                                     'home_team_id', 'away_team_id', 'ground_id']].copy()
 
     form_btwn_teams['f_form_margin_btwn_teams'] = (match_results.groupby(['home_team', 'away_team'])['margin']
                                                    .transform(lambda row: row.rolling(5).mean().shift())

@@ -135,9 +135,6 @@ def get_cleaned_data():
     for index, row in teams.iterrows():
         teams.loc[index, 'team_id'] = index + 1
 
-    __past_match_data_min__['home_team_id'] = 0
-    __past_match_data_min__['away_team_id'] = 0
-
     __past_match_data_min__ = __past_match_data_min__.merge(teams,
                                                             how="inner",
                                                             left_on='home_team',
@@ -195,16 +192,13 @@ def get_cleaned_data():
 
     next_week_frame = next_week_frame.drop(columns=['name_in_data'])
 
-    teams = pd.DataFrame(next_week_frame['home_team']).drop_duplicates().reset_index(drop=True)
+    teams = pd.DataFrame(past_match_data_min['home_team']).drop_duplicates().reset_index(drop=True)
     teams = teams.rename(columns={
         'home_team': 'team'
     })
 
     for index, row in teams.iterrows():
         teams.loc[index, 'team_id'] = index + 1
-
-    next_week_frame['home_team_id'] = 0
-    next_week_frame['away_team_id'] = 0
 
     next_week_frame = next_week_frame.merge(teams,
                                             how="inner",
