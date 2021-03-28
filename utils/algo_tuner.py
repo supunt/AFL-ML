@@ -33,11 +33,11 @@ classifiers = [
 ]
 
 
-def find_best_algorithms(dx, dy, classifier_list=classifiers):
+def find_best_algorithms(dx, dy, classifier_list=classifiers, kf_splits=5):
     print('Finding Best algo')
     # This function is adapted from https://www.kaggle.com/yassineghouzam/titanic-top-4-with-ensemble-modeling
     # Cross validate model with Kfold stratified cross validation
-    kfold = StratifiedKFold(n_splits=5)
+    kfold = StratifiedKFold(n_splits=kf_splits)
 
     # Grab the cross validation scores for each algorithm
 
@@ -72,16 +72,32 @@ def optimise_hyperparameters(train_x, train_y, algorithms, parameters):
     return best_estimators
 
 
+# __known_best_params__ = {
+#     'base_estimator': None,
+#     'bootstrap': True,
+#     'bootstrap_features': False,
+#     'max_features': 1.0,
+#     'max_samples': 0.2,
+#     'n_estimators': 10,
+#     'n_jobs': None,
+#     'oob_score': False,
+#     'random_state': None,
+#     'verbose': 0,
+#     'warm_start': False
+# }
+
 __known_best_params__ = {
-    'base_estimator': None,
-    'bootstrap': True,
-    'bootstrap_features': False,
-    'max_features': 1.0,
-    'max_samples': 0.2,
-    'n_estimators': 10,
-    'n_jobs': None,
-    'oob_score': False,
+    'Cs': [0.01],
+    'class_weight': None,
+    'dual': False,
+    'fit_intercept': True,
+    'intercept_scaling': 1,
+    'max_iter': 100,
+    'multi_class': 'ovr',
+    'n_jobs': 1,
+    'penalty': 'l2',
     'random_state': None,
-    'verbose': 0,
-    'warm_start': False
+    'solver': 'newton-cg',
+    'tol': 0.0001,
+    'verbose': 0
 }

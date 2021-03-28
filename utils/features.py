@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def get_base_feature_frame(match_results):
     features = match_results[['date', 'game', 'home_team', 'away_team', 'home_team_id', 'away_team_id', 'ground_id',
                               'venue', 'home_ground_adv', 'away_ground_adv', 'result']].copy()
@@ -22,3 +25,45 @@ def get_form_features(match_results):
                   .fillna(0))
 
     return form_btwn_teams
+
+
+def get_cross_team_key(home, away):
+    d_set = set()
+    d_set.add(home)
+    d_set.add(away)
+
+    iterator = iter(d_set)
+    first = next(iterator)
+    second = next(iterator)
+
+    return f"{first.lower().replace(' ', '_')}::{second.lower().replace(' ', '_')}"
+
+
+def get_result_last_x_encounters(match_results, x):
+    last_x_encounters = {}
+    sub_frame = match_results[['game', 'home_team', 'away_team', 'f_home_team_id', 'f_away_team_id', 'result']].copy()
+
+    sub_frame = sub_frame.sort_values(by="game")
+    sub_frame[f'f_last_{x}_encounters'] = 0.0
+    sub_frame['comp_key'] = sub_frame.apply(lambda df: get_cross_team_key(df['home_team'], df['away_team']), axis=1)
+
+    last_x_encounters = {x: 0 for x in list(sub_frame['comp_key'].unique())}
+
+    sub_frame_list = []
+
+    for key in last_x_encounters:
+        sub_frame_copy = sub_frame[sub_frame['comp_key'] == key].copy()
+        sub_frame_copy['f_last_5_encounters'] = sub_frame_copy.iloc[:, 5].rolling(window=x).mean()
+        sub_frame_list.append(sub_frame_copy)
+
+        last_x_encounters[key] = sub_frame_copy.iloc[len(sub_frame_copy) - 1]['f_last_5_encounters']
+
+    concat_frame = pd.DataFrame(columns=list(sub_frame.columns))
+    for item in sub_frame_list:
+        concat_frame = concat_frame.append(item, ignore_index=True)
+
+    concat_frame = concat_frame.sort_values(by="game")
+    concat_frame['f_last_5_encounters'] = concat_frame['f_last_5_encounters'].fillna(0.0)
+
+    concat_frame = concat_frame[['game', f'f_last_{x}_encounters']]
+    return concat_frame, last_x_encounters

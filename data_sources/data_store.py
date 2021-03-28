@@ -25,10 +25,10 @@ def get_next_week_frame(max_game_id_in_history):
     next_week_data['away_ground_adv'] = next_week_data.apply(lambda r: is_home_for_team(
         r['Away_Team'], r['Venue']), axis=1)
 
+    next_week_data['Date'] = next_week_data['Date'].apply(lambda x: x.date())
+
     for index, row in next_week_data.iterrows():
         next_week_data.loc[index, 'game'] = int(max_game_id_in_history) + int(len(next_week_data) - index)
-
-    next_week_data['Date'] = next_week_data['Date'].apply(lambda x: x.date())
 
     next_week_data = next_week_data.rename(str.lower, axis='columns')
 
@@ -46,6 +46,9 @@ def get_cleaned_data():
     print("1. Loading Match data (minimized)")
     __past_match_data_min__ = pd.read_excel(".\\data_samples\\afl-reduced_results.xlsx", sheet_name="Data", header=0
                                             , dtype=str)
+
+    for index, row in __past_match_data_min__.iterrows():
+        __past_match_data_min__.loc[index, 'game'] = int(len(__past_match_data_min__) - index)
 
     # ------------------------------------------------------------------------------------------------------------------
     print("2. Loading Match Ground Name Mappings")
@@ -158,9 +161,9 @@ def get_cleaned_data():
 
     __past_match_data_min__ = __past_match_data_min__.drop(columns=['team'])
 
-    print("7. Set Game Number")
-    for index, row in __past_match_data_min__.iterrows():
-        __past_match_data_min__.loc[index, 'game'] = int(len(__past_match_data_min__) - index)
+    print("7. Sort by date and Set Game Number")
+    __past_match_data_min__['date'] = __past_match_data_min__['date'].apply(
+        lambda x: dt.datetime.strptime(x[0:10], '%Y-%m-%d').date())
 
     print("8. Reorder Cols")
 
@@ -170,6 +173,8 @@ def get_cleaned_data():
     new_col_order = ['game']
     new_col_order.extend(cols)
     __past_match_data_min__ = __past_match_data_min__[new_col_order]
+
+    __past_match_data_min__['season'] = __past_match_data_min__.apply(lambda s: int(s['date'].strftime('%Y')), axis=1)
 
     print("\n9. Cleaned Data Stats")
     print("--------------------------------------------------------------------------")
@@ -223,6 +228,46 @@ def get_cleaned_data():
     })
 
     next_week_frame = next_week_frame.drop(columns=['team'])
+
+    next_week_frame['season'] = next_week_frame.apply(lambda s: int(s['date'].strftime('%Y')), axis=1)
+
+    past_match_data_min = past_match_data_min.sort_values(by=['game'], ascending=False)
+    next_week_frame = next_week_frame.sort_values(by=['game'], ascending=False)
+
+    past_match_data_min['home_ground_adv_tf'] = past_match_data_min['home_ground_adv']
+    past_match_data_min['away_ground_adv_tf'] = past_match_data_min['away_ground_adv']
+
+    next_week_frame['home_ground_adv_tf'] = next_week_frame['home_ground_adv']
+    next_week_frame['away_ground_adv_tf'] = next_week_frame['away_ground_adv']
+
+    past_match_data_min = past_match_data_min.rename(columns={
+        'margin': 'f_margin',
+        'away_team_id': 'f_away_team_id',
+        'home_team_id': 'f_home_team_id',
+        'home_ground_adv': 'f_home_ground_adv',
+        'away_ground_adv': 'f_away_ground_adv',
+        'ground_id': 'f_ground_id'
+    })
+
+    next_week_frame = next_week_frame.rename(columns={
+        'margin': 'f_margin',
+        'away_team_id': 'f_away_team_id',
+        'home_team_id': 'f_home_team_id',
+        'home_ground_adv': 'f_home_ground_adv',
+        'away_ground_adv': 'f_away_ground_adv',
+        'ground_id': 'f_ground_id'
+    })
+
+    past_match_data_min['f_home_ground_adv'] = past_match_data_min['f_home_ground_adv'].apply(
+        lambda x: 1.0 if x else 0.0)
+    past_match_data_min['f_away_ground_adv'] = past_match_data_min['f_away_ground_adv'].apply(
+        lambda x: 1.0 if x else 0.0)
+
+    next_week_frame['f_away_ground_adv'] = next_week_frame['f_away_ground_adv'].apply(
+        lambda x: 1.0 if x else 0.0)
+
+    next_week_frame['f_away_ground_adv'] = next_week_frame['f_away_ground_adv'].apply(
+        lambda x: 1.0 if x else 0.0)
 
     return past_match_data_min, next_week_frame
 
