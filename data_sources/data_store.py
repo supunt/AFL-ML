@@ -118,10 +118,11 @@ def get_cleaned_data():
     __past_match_data_min__['margin'] = __past_match_data_min__['home_score'].astype(int) - \
                                         __past_match_data_min__['away_score'].astype(int)
 
-    __past_match_data_min__ = __past_match_data_min__.merge(afl_ground_names[['Name_In_Data', 'Ground_Id']],
-                                                            left_on='venue',
-                                                            right_on='Name_In_Data',
-                                                            how='inner')
+    __past_match_data_min__ = __past_match_data_min__.merge(
+        afl_ground_names[['Name_In_Data', 'Ground_Id']].copy().drop_duplicates(subset=['Name_In_Data']),
+        left_on='venue',
+        right_on='Name_In_Data',
+        how='inner')
 
     __past_match_data_min__ = __past_match_data_min__.rename(str.lower, axis='columns')
 
@@ -183,10 +184,11 @@ def get_cleaned_data():
 
     next_week_frame = get_next_week_frame(past_match_data_min['game'].max())
 
-    next_week_frame = next_week_frame.merge(afl_ground_names[['Name_In_Data', 'Ground_Id']],
-                                                            left_on='venue',
-                                                            right_on='Name_In_Data',
-                                                            how='inner')
+    next_week_frame = next_week_frame.merge(
+        afl_ground_names[['Name_In_Data', 'Ground_Id']].copy().drop_duplicates(subset=['Name_In_Data']),
+        left_on='venue',
+        right_on='Name_In_Data',
+        how='inner')
 
     next_week_frame = next_week_frame.rename(str.lower, axis='columns')
 
