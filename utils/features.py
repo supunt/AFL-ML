@@ -39,6 +39,18 @@ def get_cross_team_key(home, away):
     return f"{first.lower().replace(' ', '_')}::{second.lower().replace(' ', '_')}"
 
 
+def get_cross_team_ground_key(home, away, ground_id):
+    d_set = set()
+    d_set.add(home)
+    d_set.add(away)
+
+    iterator = iter(d_set)
+    first = next(iterator)
+    second = next(iterator)
+
+    return f"{first.lower().replace(' ', '_')}::{second.lower().replace(' ', '_')}::{str(int(ground_id))}"
+
+
 def get_result_last_x_encounters(match_results, x):
     last_x_encounters = {}
     sub_frame = match_results[['game', 'home_team', 'away_team', 'f_home_team_id', 'f_away_team_id', 'result']].copy()
@@ -53,17 +65,73 @@ def get_result_last_x_encounters(match_results, x):
 
     for key in last_x_encounters:
         sub_frame_copy = sub_frame[sub_frame['comp_key'] == key].copy()
-        sub_frame_copy['f_last_5_encounters'] = sub_frame_copy.iloc[:, 5].rolling(window=x).mean()
+        sub_frame_copy[f'f_last_{x}_encounter_result'] = sub_frame_copy.iloc[:, 5].rolling(window=x).mean()
         sub_frame_list.append(sub_frame_copy)
 
-        last_x_encounters[key] = sub_frame_copy.iloc[len(sub_frame_copy) - 1]['f_last_5_encounters']
+        last_x_encounters[key] = sub_frame_copy.iloc[len(sub_frame_copy) - 1][f'f_last_{x}_encounters']
 
     concat_frame = pd.DataFrame(columns=list(sub_frame.columns))
     for item in sub_frame_list:
         concat_frame = concat_frame.append(item, ignore_index=True)
 
     concat_frame = concat_frame.sort_values(by="game")
-    concat_frame['f_last_5_encounters'] = concat_frame['f_last_5_encounters'].fillna(0.0)
+    concat_frame[f'f_last_{x}_encounters'] = concat_frame[f'f_last_{x}_encounters'].fillna(0.0)
 
     concat_frame = concat_frame[['game', f'f_last_{x}_encounters']]
-    return concat_frame, last_x_encounters
+
+    encounter_matrix_fr_object = {
+        'comp_key': [],
+        f'f_last_{x}_encounters': []
+    }
+
+    for k, v in last_x_encounters.items():
+        encounter_matrix_fr_object['comp_key'].append(k)
+        encounter_matrix_fr_object[f'f_last_{x}_encounters'].append(v)
+
+    last_x_encounters_fr = pd.DataFrame(encounter_matrix_fr_object)
+
+    return concat_frame, last_x_encounters_fr
+
+
+def get_result_last_x_encounters_in_ground(match_results, x):
+    last_x_encounters_in_ground = {}
+    sub_frame = match_results[['game', 'home_team', 'away_team', 'f_ground_id', 'result']].copy()
+
+    sub_frame = sub_frame.sort_values(by="game")
+    sub_frame[f'f_last_{x}_encounters_in_ground'] = 0.0
+    sub_frame['comp_key'] = sub_frame.apply(lambda df: get_cross_team_ground_key(df['home_team'], df['away_team'],
+                                                                                 df['f_ground_id']), axis=1)
+
+    last_x_encounters_in_ground = {x: 0 for x in list(sub_frame['comp_key'].unique())}
+
+    sub_frame_list = []
+
+    for key in last_x_encounters_in_ground:
+        sub_frame_copy = sub_frame[sub_frame['comp_key'] == key].copy()
+        sub_frame_copy[f'f_last_{x}_encounters_in_ground'] = sub_frame_copy.iloc[:, 4].rolling(window=x).mean()
+        sub_frame_list.append(sub_frame_copy)
+
+        last_x_encounters_in_ground[key] = sub_frame_copy.iloc[len(sub_frame_copy) - 1][
+            f'f_last_{x}_encounters_in_ground']
+
+    concat_frame = pd.DataFrame(columns=list(sub_frame.columns))
+    for item in sub_frame_list:
+        concat_frame = concat_frame.append(item, ignore_index=True)
+
+    concat_frame = concat_frame.sort_values(by="game")
+    concat_frame[f'f_last_{x}_encounters_in_ground'] = concat_frame[f'f_last_{x}_encounters_in_ground'].fillna(0.0)
+
+    concat_frame = concat_frame[['game', f'f_last_{x}_encounters_in_ground']]
+
+    encounter_matrix_fr_object = {
+        'comp_key': [],
+        f'f_last_{x}_encounters_in_ground': []
+    }
+
+    for k, v in last_x_encounters_in_ground.items():
+        encounter_matrix_fr_object['comp_key'].append(k)
+        encounter_matrix_fr_object[f'f_last_{x}_encounters_in_ground'].append(v)
+
+    last_x_encounters_gr_fr = pd.DataFrame(encounter_matrix_fr_object)
+
+    return concat_frame, last_x_encounters_gr_fr

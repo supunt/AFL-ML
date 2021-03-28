@@ -1,7 +1,7 @@
 from data_sources import set_load_cached
 from sklearn.preprocessing import StandardScaler
 from utils.algo_tuner import find_best_algorithms
-from utils.features import get_result_last_x_encounters
+from utils.features import get_result_last_x_encounters, get_result_last_x_encounters_in_ground
 
 set_load_cached(False)
 
@@ -19,14 +19,19 @@ def estimate(transform_scaler=True):
 
     # Append last 5 encounter results
     last_5_encounter_feature, encounter_5_matrix = get_result_last_x_encounters(match_results, 5)
+    last_5_encounter_ground_feature, encounter_5_ground_matrix = get_result_last_x_encounters_in_ground(match_results,
+                                                                                                        5)
 
     match_results = match_results.merge(last_5_encounter_feature, on="game")
+    match_results = match_results.merge(last_5_encounter_ground_feature, on="game")
 
     train_df = match_results[match_results.season == __year__]
     feature_cols = ['f_away_team_id', 'f_home_team_id', 'f_ground_id',
-                    'f_home_ground_adv', 'f_away_ground_adv', 'f_last_5_encounters']
+                    'f_home_ground_adv', 'f_away_ground_adv', 'f_last_5_encounters',
+                    'f_last_5_encounters_in_ground']
+
     feature_cols_original = feature_cols.copy()
-    feature_cols.extend(['game', ])
+    feature_cols.extend(['game'])
 
     # Create our train set
     X = match_results[match_results.season != __year__][feature_cols]
@@ -46,4 +51,4 @@ def estimate(transform_scaler=True):
 
 
 # Execute Estimation ---------------------------------------------------------------------------------------------------
-estimate(transform_scaler=False)
+estimate(transform_scaler=True)
