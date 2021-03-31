@@ -28,27 +28,13 @@ def get_form_features(match_results):
 
 
 def get_cross_team_key(home, away):
-    d_set = set()
-    d_set.add(home)
-    d_set.add(away)
-
-    iterator = iter(d_set)
-    first = next(iterator)
-    second = next(iterator)
-
-    return f"{first.lower().replace(' ', '_')}::{second.lower().replace(' ', '_')}"
+    sorted_array = sorted([home, away])
+    return f"{sorted_array[0].lower().replace(' ', '_')}::{sorted_array[1].lower().replace(' ', '_')}"
 
 
 def get_cross_team_ground_key(home, away, ground_id):
-    d_set = set()
-    d_set.add(home)
-    d_set.add(away)
-
-    iterator = iter(d_set)
-    first = next(iterator)
-    second = next(iterator)
-
-    return f"{first.lower().replace(' ', '_')}::{second.lower().replace(' ', '_')}::{str(int(ground_id))}"
+    sorted_array = sorted([home, away])
+    return f"{sorted_array[0].lower().replace(' ', '_')}::{sorted_array[1].lower().replace(' ', '_')}::{str(int(ground_id))}"
 
 
 def get_result_last_x_encounters(match_results, x):
@@ -65,7 +51,11 @@ def get_result_last_x_encounters(match_results, x):
 
     for key in last_x_encounters:
         sub_frame_copy = sub_frame[sub_frame['comp_key'] == key].copy()
-        sub_frame_copy[f'f_last_{x}_encounter_result'] = sub_frame_copy.iloc[:, 5].rolling(window=x).mean()
+        key_part_1 = key.split("::")[0]
+
+        # flip score if home and away are flipped
+        sub_frame_copy.loc[sub_frame_copy['home_team'].str.lower() != key_part_1, 'result'] = -sub_frame_copy['result']
+        sub_frame_copy[f'f_last_{x}_encounters'] = sub_frame_copy['result'].rolling(window=x).sum()
         sub_frame_list.append(sub_frame_copy)
 
         last_x_encounters[key] = sub_frame_copy.iloc[len(sub_frame_copy) - 1][f'f_last_{x}_encounters']
@@ -108,7 +98,13 @@ def get_result_last_x_encounters_in_ground(match_results, x):
 
     for key in last_x_encounters_in_ground:
         sub_frame_copy = sub_frame[sub_frame['comp_key'] == key].copy()
-        sub_frame_copy[f'f_last_{x}_encounters_in_ground'] = sub_frame_copy.iloc[:, 4].rolling(window=x).mean()
+
+        key_part_1 = key.split("::")[0]
+
+        # flip score if home and away are flipped
+        sub_frame_copy.loc[sub_frame_copy['home_team'].str.lower() != key_part_1, 'result'] = -sub_frame_copy['result']
+
+        sub_frame_copy[f'f_last_{x}_encounters_in_ground'] = sub_frame_copy.iloc[:, 4].rolling(window=x).sum()
         sub_frame_list.append(sub_frame_copy)
 
         last_x_encounters_in_ground[key] = sub_frame_copy.iloc[len(sub_frame_copy) - 1][
