@@ -1,7 +1,8 @@
 from data_sources import set_load_cached
 from sklearn.preprocessing import StandardScaler
 from utils.algo_tuner import find_best_algorithms
-from utils.features import get_result_last_x_encounters, get_result_last_x_encounters_in_ground
+from utils.features import get_result_last_x_encounters, get_result_last_x_encounters_in_ground,\
+    get_result_season_weighted_last_x_encounters
 
 set_load_cached(False)
 
@@ -21,9 +22,12 @@ def estimate(transform_scaler=True):
     last_5_encounter_feature, encounter_5_matrix = get_result_last_x_encounters(match_results, 5)
     last_5_encounter_ground_feature, encounter_5_ground_matrix = get_result_last_x_encounters_in_ground(match_results,
                                                                                                         5)
+    season_based_last_5_encounter_feature, season_based_encounter_5_matrix = \
+        get_result_season_weighted_last_x_encounters(match_results, 5)
 
     match_results = match_results.merge(last_5_encounter_feature, on="game")
     match_results = match_results.merge(last_5_encounter_ground_feature, on="game")
+    match_results = match_results.merge(season_based_last_5_encounter_feature, on="game")
 
     train_df = match_results[match_results.season == __year__]
     feature_cols = ['f_away_team_id', 'f_home_team_id', 'f_ground_id',
