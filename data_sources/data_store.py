@@ -109,17 +109,12 @@ def get_cleaned_data():
     __past_match_data_min__ = __past_match_data_min__.rename(str.lower, axis='columns')
 
     print("6. Set Match Result")
-    __past_match_data_min__.loc[
-        __past_match_data_min__['home_score'] == __past_match_data_min__['away_score'], 'result'] = 0
-
-    __past_match_data_min__.loc[
-        __past_match_data_min__['home_score'] > __past_match_data_min__['away_score'], 'result'] = 1
-
-    __past_match_data_min__.loc[
-        __past_match_data_min__['home_score'] < __past_match_data_min__['away_score'], 'result'] = -1
-
     __past_match_data_min__['margin'] = __past_match_data_min__['home_score'].astype(int) - \
                                         __past_match_data_min__['away_score'].astype(int)
+
+    __past_match_data_min__.loc[__past_match_data_min__['margin'] == 0, 'result'] = 0
+    __past_match_data_min__.loc[__past_match_data_min__['margin'] > 0, 'result'] = 1
+    __past_match_data_min__.loc[__past_match_data_min__['margin'] < 0, 'result'] = -1
 
     __past_match_data_min__ = __past_match_data_min__.merge(
         afl_ground_names[['Name_In_Data', 'Ground_Id']].copy().drop_duplicates(subset=['Name_In_Data']),

@@ -11,7 +11,7 @@ from data_sources import data_store
 __year__ = 2019
 
 
-def estimate(transform_scaler=True):
+def estimate(transform_scaler=True, min_season_to_train=2000):
     print('Load data')
     match_results, next_week_frame = data_store.get_cleaned_data()
 
@@ -38,8 +38,8 @@ def estimate(transform_scaler=True):
     feature_cols.extend(['game'])
 
     # Create our train set
-    X = match_results[match_results.season != __year__][feature_cols]
-    Y = match_results.loc[match_results.season != __year__, 'result']
+    X = match_results[match_results.season > min_season_to_train][feature_cols]
+    Y = match_results.loc[match_results.season > min_season_to_train, 'result']
 
     if transform_scaler:
         scaler = StandardScaler()
@@ -55,4 +55,4 @@ def estimate(transform_scaler=True):
 
 
 # Execute Estimation ---------------------------------------------------------------------------------------------------
-estimate(transform_scaler=True)
+estimate(transform_scaler=True, min_season_to_train=2005)

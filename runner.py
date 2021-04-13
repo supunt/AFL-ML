@@ -12,7 +12,7 @@ set_load_cached(False)
 from data_sources import data_store
 
 
-def run_prediction(transform_scaler=True):
+def run_prediction(transform_scaler=True, min_season_to_train=2000):
     print('Load data')
     match_results, next_week_frame = data_store.get_cleaned_data()
 
@@ -42,7 +42,7 @@ def run_prediction(transform_scaler=True):
 
     train_df = match_results_fwd[~match_results_fwd.game.isin(next_week_frame.game)]
 
-    train_df = train_df[train_df['game'] > 2000]
+    train_df = train_df[train_df['game'] > min_season_to_train]
 
     feature_cols_og = ['f_away_team_id', 'f_home_team_id', 'f_ground_id',
                        'f_home_ground_adv', 'f_away_ground_adv', 'f_last_5_encounters', 'f_last_5_encounters_in_ground',
@@ -151,4 +151,4 @@ def run_prediction(transform_scaler=True):
 
 
 # Execute Prediction ---------------------------------------------------------------------------------------------------
-run_prediction(transform_scaler=True)
+run_prediction(transform_scaler=True, min_season_to_train=2005)
