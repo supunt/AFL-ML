@@ -241,7 +241,9 @@ def get_cleaned_data():
         'home_team_id': 'f_home_team_id',
         'home_ground_adv': 'f_home_ground_adv',
         'away_ground_adv': 'f_away_ground_adv',
-        'ground_id': 'f_ground_id'
+        'ground_id': 'f_ground_id',
+        'home_odds': 'f_home_odds',
+        'away_odds': 'f_away_odds'
     })
 
     next_week_frame = next_week_frame.rename(columns={
@@ -250,7 +252,9 @@ def get_cleaned_data():
         'home_team_id': 'f_home_team_id',
         'home_ground_adv': 'f_home_ground_adv',
         'away_ground_adv': 'f_away_ground_adv',
-        'ground_id': 'f_ground_id'
+        'ground_id': 'f_ground_id',
+        'home_odds': 'f_home_odds',
+        'away_odds': 'f_away_odds'
     })
 
     past_match_data_min['f_home_ground_adv'] = past_match_data_min['f_home_ground_adv'].apply(

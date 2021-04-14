@@ -30,7 +30,7 @@ def estimate(transform_scaler=True, min_season_to_train=2000):
     match_results = match_results.merge(season_based_last_5_encounter_feature, on="game")
 
     train_df = match_results[match_results.season == __year__]
-    feature_cols = ['f_away_team_id', 'f_home_team_id', 'f_ground_id',
+    feature_cols = ['f_away_team_id', 'f_home_team_id', 'f_ground_id', 'f_home_odds', 'f_away_odds',
                     'f_home_ground_adv', 'f_away_ground_adv', 'f_last_5_encounters',
                     'f_last_5_encounters_in_ground']
 
