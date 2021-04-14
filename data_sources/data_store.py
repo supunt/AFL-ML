@@ -40,7 +40,7 @@ def get_next_week_frame(max_game_id_in_history, week_id=None):
     return next_week_data
 
 
-def get_cleaned_data(week_id=None):
+def get_cleaned_data(week_id=None, cache_past_data=False):
     # if __loading_cached__:
     #     print('Loading from last cached file')
     #     past_match_data_min = pd.read_csv(__cached_file_path__, header=0)
@@ -189,8 +189,9 @@ def get_cleaned_data(week_id=None):
 
     past_match_data_min = __past_match_data_min__.copy()
 
-    print(f"10. Cached File written to {__cached_file_path__}")
-    past_match_data_min.to_csv(__cached_file_path__)
+    if cache_past_data:
+        print(f"10. Cached File written to {__cached_file_path__}")
+        past_match_data_min.to_csv(__cached_file_path__)
 
     next_week_frame = get_next_week_frame(past_match_data_min['game'].max(), week_id)
 
