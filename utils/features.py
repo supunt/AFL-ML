@@ -38,7 +38,7 @@ def get_cross_team_ground_key(home, away, ground_id):
     return f"{sorted_array[0].lower().replace(' ', '_')}::{sorted_array[1].lower().replace(' ', '_')}::{str(int(ground_id))}"
 
 
-def get_result_last_x_encounters(match_results, x):
+def get_last_x_encounters_feature(match_results, x):
     last_x_encounters = {}
     sub_frame = match_results[['game', 'home_team', 'away_team', 'f_home_team_id', 'f_away_team_id', 'result']].copy()
 
@@ -91,10 +91,10 @@ def __get_season_based_weight__(season, this_year):
         return 0
 
 
-def get_result_margin_weighted_last_x_encounters(match_results, x):
+def get_margin_weighted_last_x_encounters_feature(match_results, x):
     last_x_encounters = {}
     sub_frame = match_results[['game', 'home_team', 'away_team',
-                               'f_home_team_id', 'f_away_team_id', 'result', 'season']].copy()
+                               'f_home_team_id', 'f_away_team_id', 'result', 'season', 'f_margin']].copy()
 
     sub_frame = sub_frame.sort_values(by="game")
     sub_frame[f'f_margin_weighted_last_{x}_encounters'] = 0.0
@@ -113,7 +113,7 @@ def get_result_margin_weighted_last_x_encounters(match_results, x):
         # flip score if home and away are flipped
         sub_frame_copy.loc[sub_frame_copy['home_team'].str.lower() != key_part_1, 'result'] = -sub_frame_copy['result']
         sub_frame_copy['result'] = sub_frame_copy.apply(
-            lambda df: df['result'] * abs(df['margin']), axis=1)
+            lambda df: df['result'] * abs(df['f_margin']), axis=1)
 
         sub_frame_copy[f'f_margin_weighted_last_{x}_encounters'] = sub_frame_copy['result'].rolling(window=x).sum()
         sub_frame_list.append(sub_frame_copy)
@@ -144,7 +144,7 @@ def get_result_margin_weighted_last_x_encounters(match_results, x):
     return concat_frame, last_x_encounters_fr
 
 
-def get_result_season_weighted_last_x_encounters(match_results, x):
+def get_season_weighted_last_x_encounters_feature(match_results, x):
     last_x_encounters = {}
     sub_frame = match_results[['game', 'home_team', 'away_team',
                                'f_home_team_id', 'f_away_team_id', 'result', 'season']].copy()
@@ -197,7 +197,7 @@ def get_result_season_weighted_last_x_encounters(match_results, x):
     return concat_frame, last_x_encounters_fr
 
 
-def get_result_last_x_encounters_in_ground(match_results, x):
+def get_last_x_encounters_in_ground_feature(match_results, x):
     last_x_encounters_in_ground = {}
     sub_frame = match_results[['game', 'home_team', 'away_team', 'f_ground_id', 'result']].copy()
 
@@ -255,7 +255,7 @@ def __get_array_sum__(arr):
     return arr_sum
 
 
-def get_result_last_x_form(match_results, x):
+def get_last_x_matches_form_feature(match_results, x):
     sub_frame = match_results[['game', 'home_team', 'away_team', 'f_home_team_id', 'f_away_team_id', 'result']].copy()
     sub_frame = sub_frame.sort_values(by="game")
 

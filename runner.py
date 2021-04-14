@@ -3,8 +3,9 @@ from sklearn.preprocessing import StandardScaler
 from utils.algo_tuner import __known_best_params__
 from sklearn import linear_model
 import pandas as pd
-from utils.features import get_result_last_x_encounters, get_cross_team_key, get_result_last_x_encounters_in_ground, \
-    get_cross_team_ground_key, get_result_season_weighted_last_x_encounters, get_result_last_x_form
+from utils.features import get_last_x_encounters_feature, get_cross_team_key, get_last_x_encounters_in_ground_feature, \
+    get_cross_team_ground_key, get_season_weighted_last_x_encounters_feature, get_last_x_matches_form_feature, \
+    get_margin_weighted_last_x_encounters_feature
 
 
 set_load_cached(False)
@@ -19,15 +20,18 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
     match_results_fwd = match_results.copy().append(next_week_frame)
     match_results_fwd = match_results_fwd.sort_values(by=['game'], ascending=False)
 
-    last_5_encounter_feature, encounter_matrix_frame = get_result_last_x_encounters(match_results, 5)
-    last_5_encounter_in_ground_feature, encounter_in_ground_matrix_frame = get_result_last_x_encounters_in_ground(
+    last_5_encounter_feature, encounter_matrix_frame = get_last_x_encounters_feature(match_results, 5)
+    last_5_encounter_in_ground_feature, encounter_in_ground_matrix_frame = get_last_x_encounters_in_ground_feature(
         match_results, 5)
 
     season_based_last_5_encounter_feature, season_based_encounter_5_matrix_frame = \
-        get_result_season_weighted_last_x_encounters(match_results, 5)
+        get_season_weighted_last_x_encounters_feature(match_results, 5)
 
     # last 5 Match Forms
-    last_5_match_form_feature, last_5_match_from_frame = get_result_last_x_form(match_results, 5)
+    last_5_match_form_feature, last_5_match_from_frame = get_last_x_matches_form_feature(match_results, 5)
+
+    last_5_matches_dominance_feature, last_5_match_dominance_frame = \
+        get_margin_weighted_last_x_encounters_feature(match_results,  5)
 
     # ------------------------------------------------------------------------------------------------------------------
     # - Adding features to train data set
@@ -39,9 +43,13 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
     match_results_fwd['f_last_5_encounters_in_ground'] = match_results_fwd['f_last_5_encounters_in_ground'].fillna(0.0)
 
     match_results_fwd = match_results_fwd.merge(season_based_last_5_encounter_feature, on="game", how="left")
-    match_results_fwd['f_season_weighted_last_5_encounters'] = match_results_fwd['f_season_weighted_last_5_encounters'].fillna(0.0)
+    match_results_fwd['f_season_weighted_last_5_encounters'] = match_results_fwd[
+        'f_season_weighted_last_5_encounters'].fillna(0.0)
 
     match_results_fwd = match_results_fwd.merge(last_5_match_form_feature, on="game", how="left")
+    match_results_fwd = match_results_fwd.merge(last_5_matches_dominance_feature, on="game", how="left")
+    match_results_fwd['f_margin_weighted_last_5_encounters'] = match_results_fwd[
+        'f_margin_weighted_last_5_encounters'].fillna(0.0)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -51,7 +59,8 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
 
     feature_cols_og = ['f_away_team_id', 'f_home_team_id', 'f_ground_id',
                        'f_home_ground_adv', 'f_away_ground_adv', 'f_last_5_encounters', 'f_last_5_encounters_in_ground',
-                       'f_season_weighted_last_5_encounters', 'f_last_5_away_form', 'f_last_5_home_form']
+                       'f_season_weighted_last_5_encounters', 'f_last_5_away_form', 'f_last_5_home_form',
+                       'f_margin_weighted_last_5_encounters']
 
     feature_cols = feature_cols_og.copy()
     feature_cols.extend(['game'])
