@@ -4,7 +4,7 @@ import datetime as dt
 
 
 __cached_file_path__ = 'H:\\temp\\_cached_race_data.csv'
-__next_week_file_path__ = 'H:\\temp\\next-week.xlsx'
+__next_week_file_path__ = '.\\data_samples\\next-week.xlsx'
 
 team_home_ground_info = None
 
