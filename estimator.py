@@ -3,7 +3,7 @@ from sklearn.preprocessing import StandardScaler
 from utils.algo_tuner import find_best_algorithms
 from utils.features import get_last_x_encounters_feature, get_last_x_encounters_in_ground_feature,\
     get_season_weighted_last_x_encounters_feature, get_last_x_matches_form_feature, \
-    get_margin_weighted_last_x_encounters_feature
+    get_margin_weighted_last_x_encounters_feature, get_last_x_matches_dominance_feature
 
 set_load_cached(False)
 
@@ -19,7 +19,7 @@ def estimate(transform_scaler=True, min_season_to_train=2000):
     match_results['f_home_ground_adv'] = match_results['f_home_ground_adv'].apply(lambda x: 1.0 if x else 0.0)
     match_results['f_away_ground_adv'] = match_results['f_away_ground_adv'].apply(lambda x: 1.0 if x else 0.0)
 
-    # Append last 5 encounter results
+    # Features START ---------------------------------------------------------------------------------------------------
     last_5_encounter_feature, encounter_5_matrix = get_last_x_encounters_feature(match_results, 5)
     last_5_encounter_ground_feature, encounter_5_ground_matrix = get_last_x_encounters_in_ground_feature(match_results,
                                                                                                          5)
@@ -28,8 +28,11 @@ def estimate(transform_scaler=True, min_season_to_train=2000):
 
     last_5_match_form_feature, last_5_match_from_frame = get_last_x_matches_form_feature(match_results, 5)
 
-    last_5_matches_dominance_feature, last_5_match_dominance_frame = \
+    last_5_matches_h2h_dominance_feature, last_5_h2h_match_dominance_frame = \
         get_margin_weighted_last_x_encounters_feature(match_results, 5)
+
+    last_5_matches_dominance_feature, last_5_match_dominance_frame = \
+        get_last_x_matches_dominance_feature(match_results, 5)
 
     # Features END -----------------------------------------------------------------------------------------------------
 
@@ -37,6 +40,7 @@ def estimate(transform_scaler=True, min_season_to_train=2000):
     match_results = match_results.merge(last_5_encounter_ground_feature, on="game")
     match_results = match_results.merge(season_based_last_5_encounter_feature, on="game")
     match_results = match_results.merge(last_5_match_form_feature, on="game", how="left")
+    match_results = match_results.merge(last_5_matches_h2h_dominance_feature, on="game", how="left")
     match_results = match_results.merge(last_5_matches_dominance_feature, on="game", how="left")
 
     # Features Concat END ----------------------------------------------------------------------------------------------
@@ -45,7 +49,7 @@ def estimate(transform_scaler=True, min_season_to_train=2000):
     feature_cols = ['f_away_team_id', 'f_home_team_id', 'f_ground_id', 'f_home_odds', 'f_away_odds',
                     'f_home_ground_adv', 'f_away_ground_adv', 'f_last_5_encounters',
                     'f_last_5_encounters_in_ground', 'f_last_5_away_form', 'f_last_5_home_form',
-                    'f_margin_weighted_last_5_encounters']
+                    'f_margin_weighted_last_5_encounters', 'f_last_5_home_dominance', 'f_last_5_away_dominance']
 
     feature_cols_original = feature_cols.copy()
     feature_cols.extend(['game'])
