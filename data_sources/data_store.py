@@ -17,8 +17,13 @@ def is_home_for_team(team_name, ground):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def get_next_week_frame(max_game_id_in_history):
-    next_week_data = pd.read_excel(__next_week_file_path__, sheet_name="Data", header=0)
+def get_next_week_frame(max_game_id_in_history, week_id=None):
+    path = __next_week_file_path__
+
+    if week_id is not None:
+        path = f".\\data_samples\\archived\\{week_id}\\next-week.xlsx"
+
+    next_week_data = pd.read_excel(path, sheet_name="Data", header=0)
 
     next_week_data['home_ground_adv'] = next_week_data.apply(lambda r: is_home_for_team(
         r['Home_Team'], r['Venue']), axis=1)
@@ -35,16 +40,21 @@ def get_next_week_frame(max_game_id_in_history):
     return next_week_data
 
 
-def get_cleaned_data():
+def get_cleaned_data(week_id=None):
     # if __loading_cached__:
     #     print('Loading from last cached file')
     #     past_match_data_min = pd.read_csv(__cached_file_path__, header=0)
     #
     #     return past_match_data_min, get_next_week_frame(past_match_data_min['game'].max())
 
+    base_path = ".\\data_samples"
+
+    if week_id is not None:
+        base_path += f"\\archived\\{week_id}"
+
     # ------------------------------------------------------------------------------------------------------------------
     print("1. Loading Match data (minimized)")
-    __past_match_data_min__ = pd.read_excel(".\\data_samples\\afl-reduced_results.xlsx", sheet_name="Data", header=0
+    __past_match_data_min__ = pd.read_excel(f"{base_path}\\afl-reduced_results.xlsx", sheet_name="Data", header=0
                                             , dtype=str)
 
     for index, row in __past_match_data_min__.iterrows():
@@ -52,7 +62,7 @@ def get_cleaned_data():
 
     # ------------------------------------------------------------------------------------------------------------------
     print("2. Loading Match Ground Name Mappings")
-    __afl_ground_names__ = pd.read_excel(".\\data_samples\\afl_ground_names.xlsx", sheet_name="Sheet1", header=0,
+    __afl_ground_names__ = pd.read_excel(f".\\data_samples\\afl_ground_names.xlsx", sheet_name="Sheet1", header=0,
                                          dtype=str)
     __afl_ground_names__ = __afl_ground_names__.fillna('')
     __venues_in_data__ = list(__past_match_data_min__['Venue'].str.lower().unique())
@@ -71,7 +81,7 @@ def get_cleaned_data():
 
     # ------------------------------------------------------------------------------------------------------------------
     print("3. Loading Home Ground information")
-    __team_home_ground_info__ = pd.read_excel(".\\data_samples\\afl-home-grounds.xlsx", sheet_name="Sheet1", header=0,
+    __team_home_ground_info__ = pd.read_excel(f".\\data_samples\\afl-home-grounds.xlsx", sheet_name="Sheet1", header=0,
                                               dtype=str)
     __team_home_ground_info__ = __team_home_ground_info__.fillna('')
 
@@ -182,7 +192,7 @@ def get_cleaned_data():
     print(f"10. Cached File written to {__cached_file_path__}")
     past_match_data_min.to_csv(__cached_file_path__)
 
-    next_week_frame = get_next_week_frame(past_match_data_min['game'].max())
+    next_week_frame = get_next_week_frame(past_match_data_min['game'].max(), week_id)
 
     next_week_frame = next_week_frame.merge(
         afl_ground_names[['Name_In_Data', 'Ground_Id']].copy().drop_duplicates(subset=['Name_In_Data']),

@@ -12,9 +12,9 @@ set_load_cached(False)
 from data_sources import data_store
 
 
-def run_prediction(transform_scaler=True, min_season_to_train=2000):
+def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None):
     print('Load data')
-    match_results, next_week_frame = data_store.get_cleaned_data()
+    match_results, next_week_frame = data_store.get_cleaned_data(week_id)
 
     match_results_fwd = match_results.copy().append(next_week_frame)
     match_results_fwd = match_results_fwd.sort_values(by=['game'], ascending=False)
@@ -75,7 +75,7 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000):
     next_round_x['unordered_comp_key'] = next_round_x.apply(
         lambda df: f"{df['home_team'].lower().replace(' ', '_')}::{df['away_team'].lower().replace(' ', '_')}", axis=1)
 
-    next_round_x = next_round_x.merge(encounter_matrix_frame, on='comp_key', how="inner")
+    next_round_x = next_round_x.merge(encounter_matrix_frame, on='comp_key', how="left")
 
     next_round_x.loc[
         next_round_x['unordered_comp_key'] != next_round_x['comp_key'], 'f_last_5_encounters'] = -next_round_x[
@@ -93,7 +93,7 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000):
     next_round_x['unordered_comp_key'] = next_round_x.apply(
         lambda df: f"{df['home_team'].lower().replace(' ', '_')}::{df['away_team'].lower().replace(' ', '_')}::{df['f_ground_id']}", axis=1)
 
-    next_round_x = next_round_x.merge(encounter_in_ground_matrix_frame, on='comp_key', how="inner")
+    next_round_x = next_round_x.merge(encounter_in_ground_matrix_frame, on='comp_key', how="left")
 
     next_round_x.loc[
         next_round_x['unordered_comp_key'] != next_round_x['comp_key'], 'f_last_5_encounters_in_ground'] = - \
@@ -112,7 +112,7 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000):
     next_round_x['unordered_comp_key'] = next_round_x.apply(
         lambda df: f"{df['home_team'].lower().replace(' ', '_')}::{df['away_team'].lower().replace(' ', '_')}", axis=1)
 
-    next_round_x = next_round_x.merge(season_based_encounter_5_matrix_frame, on='comp_key', how="inner")
+    next_round_x = next_round_x.merge(season_based_encounter_5_matrix_frame, on='comp_key', how="left")
 
     next_round_x.loc[
         next_round_x['unordered_comp_key'] != next_round_x['comp_key'], 'f_season_weighted_last_5_encounters'] = - \
@@ -123,10 +123,6 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000):
     # ------------------------------------------------------------------------------------------------------------------
     # magic happens here
     # ------------------------------------------------------------------------------------------------------------------
-
-    feature_cols.remove('f_last_5_encounters')
-    feature_cols.remove('f_last_5_encounters_in_ground')
-    feature_cols.remove('f_season_weighted_last_5_encounters')
 
     bc = linear_model.LogisticRegressionCV(**__known_best_params__)
     bc.fit(train_x[feature_cols], train_y)
@@ -151,4 +147,4 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000):
 
 
 # Execute Prediction ---------------------------------------------------------------------------------------------------
-run_prediction(transform_scaler=True, min_season_to_train=2005)
+run_prediction(transform_scaler=True, min_season_to_train=2005, week_id="week-4")
