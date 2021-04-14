@@ -69,10 +69,13 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000):
     next_round_x['comp_key'] = next_round_x.apply(lambda df: get_cross_team_key(df['home_team'], df['away_team']),
                                                   axis=1)
 
-    next_round_x['unordered_comp_key'] = next_round_x.apply(lambda df: f"{df['home_team'].lower()}::{df['away_team'].lower()}", axis=1)
+    next_round_x = next_round_x.drop(
+        columns=['f_last_5_encounters', 'f_last_5_encounters_in_ground', 'f_season_weighted_last_5_encounters'])
 
-    next_round_x = next_round_x.drop(columns=['f_last_5_encounters'])
-    next_round_x = next_round_x.merge(encounter_matrix_frame, on='comp_key')
+    next_round_x['unordered_comp_key'] = next_round_x.apply(
+        lambda df: f"{df['home_team'].lower().replace(' ', '_')}::{df['away_team'].lower().replace(' ', '_')}", axis=1)
+
+    next_round_x = next_round_x.merge(encounter_matrix_frame, on='comp_key', how="inner")
 
     next_round_x.loc[
         next_round_x['unordered_comp_key'] != next_round_x['comp_key'], 'f_last_5_encounters'] = -next_round_x[
@@ -88,10 +91,9 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000):
                                                   axis=1)
 
     next_round_x['unordered_comp_key'] = next_round_x.apply(
-        lambda df: f"{df['home_team'].lower()}::{df['away_team'].lower()}::{df['f_ground_id']}", axis=1)
+        lambda df: f"{df['home_team'].lower().replace(' ', '_')}::{df['away_team'].lower().replace(' ', '_')}::{df['f_ground_id']}", axis=1)
 
-    next_round_x = next_round_x.drop(columns=['f_last_5_encounters_in_ground'])
-    next_round_x = next_round_x.merge(encounter_in_ground_matrix_frame, on='comp_key')
+    next_round_x = next_round_x.merge(encounter_in_ground_matrix_frame, on='comp_key', how="inner")
 
     next_round_x.loc[
         next_round_x['unordered_comp_key'] != next_round_x['comp_key'], 'f_last_5_encounters_in_ground'] = - \
@@ -103,16 +105,14 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000):
     next_round_x['f_last_5_encounters_in_ground'] = next_round_x['f_last_5_encounters_in_ground'].fillna(0.0)
 
     # last known WEIGHTED rolling 5 per cross team
-    next_round_x = match_results_fwd[match_results_fwd.game.isin(next_week_frame.game)].copy()
     next_round_x['comp_key'] = ''
     next_round_x['comp_key'] = next_round_x.apply(lambda df: get_cross_team_key(df['home_team'], df['away_team']),
                                                   axis=1)
 
     next_round_x['unordered_comp_key'] = next_round_x.apply(
-        lambda df: f"{df['home_team'].lower()}::{df['away_team'].lower()}", axis=1)
+        lambda df: f"{df['home_team'].lower().replace(' ', '_')}::{df['away_team'].lower().replace(' ', '_')}", axis=1)
 
-    next_round_x = next_round_x.drop(columns=['f_season_weighted_last_5_encounters'])
-    next_round_x = next_round_x.merge(season_based_encounter_5_matrix_frame, on='comp_key')
+    next_round_x = next_round_x.merge(season_based_encounter_5_matrix_frame, on='comp_key', how="inner")
 
     next_round_x.loc[
         next_round_x['unordered_comp_key'] != next_round_x['comp_key'], 'f_season_weighted_last_5_encounters'] = - \
