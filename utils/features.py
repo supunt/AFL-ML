@@ -11,23 +11,6 @@ def get_base_feature_frame(match_results):
     return features
 
 
-def get_form_features(match_results):
-    form_btwn_teams = match_results[['game', 'home_team', 'away_team', 'margin',
-                                     'home_team_id', 'away_team_id', 'ground_id']].copy()
-
-    form_btwn_teams['f_form_margin_btwn_teams'] = (match_results.groupby(['home_team', 'away_team'])['margin']
-                                                   .transform(lambda row: row.rolling(5).mean().shift())
-                                                   .fillna(0))
-
-    form_btwn_teams['f_form_past_5_btwn_teams'] = \
-        (match_results.assign(win=lambda df: df.apply(lambda row: 1 if row.margin > 0 else 0, axis='columns'))
-                  .groupby(['home_team', 'away_team'])['result']
-                  .transform(lambda row: row.rolling(5).mean().shift() * 5)
-                  .fillna(0))
-
-    return form_btwn_teams
-
-
 def get_cross_team_key(home, away):
     sorted_array = sorted([home, away])
     return f"{sorted_array[0].lower().replace(' ', '_')}::{sorted_array[1].lower().replace(' ', '_')}"
@@ -39,6 +22,7 @@ def get_cross_team_ground_key(home, away, ground_id):
 
 
 def get_last_x_encounters_feature(match_results, x):
+    print(f"Generating feature : Result for last {x} rolling")
     last_x_encounters = {}
     sub_frame = match_results[['game', 'home_team', 'away_team', 'f_home_team_id', 'f_away_team_id', 'result']].copy()
 
@@ -92,6 +76,7 @@ def __get_season_based_weight__(season, this_year):
 
 
 def get_margin_weighted_last_x_encounters_feature(match_results, x):
+    print(f"Generating feature : Margin weighted result for last {x} rolling (Dominance)")
     last_x_encounters = {}
     sub_frame = match_results[['game', 'home_team', 'away_team',
                                'f_home_team_id', 'f_away_team_id', 'result', 'season', 'f_margin']].copy()
@@ -145,6 +130,7 @@ def get_margin_weighted_last_x_encounters_feature(match_results, x):
 
 
 def get_season_weighted_last_x_encounters_feature(match_results, x):
+    print(f"Generating feature : Season weighted result for last {x} rolling")
     last_x_encounters = {}
     sub_frame = match_results[['game', 'home_team', 'away_team',
                                'f_home_team_id', 'f_away_team_id', 'result', 'season']].copy()
@@ -198,6 +184,7 @@ def get_season_weighted_last_x_encounters_feature(match_results, x):
 
 
 def get_last_x_encounters_in_ground_feature(match_results, x):
+    print(f"Generating feature : Head-to-Head on a specific Ground for last {x} rolling")
     last_x_encounters_in_ground = {}
     sub_frame = match_results[['game', 'home_team', 'away_team', 'f_ground_id', 'result']].copy()
 
@@ -256,6 +243,7 @@ def __get_array_sum__(arr):
 
 
 def get_last_x_matches_form_feature(match_results, x):
+    print(f"Generating feature : Form for last {x} rolling")
     sub_frame = match_results[['game', 'home_team', 'away_team', 'f_home_team_id', 'f_away_team_id', 'result']].copy()
     sub_frame = sub_frame.sort_values(by="game")
 
