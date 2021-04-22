@@ -66,7 +66,8 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
     feature_cols_og = ['f_away_team_id', 'f_home_team_id', 'f_ground_id',
                        'f_home_ground_adv', 'f_away_ground_adv', 'f_last_5_encounters', 'f_last_5_encounters_in_ground',
                        'f_season_weighted_last_5_encounters', 'f_last_5_away_form', 'f_last_5_home_form',
-                       'f_margin_weighted_last_5_encounters', 'f_last_5_home_dominance', 'f_last_5_away_dominance']
+                       'f_margin_weighted_last_5_encounters', 'f_last_5_home_dominance', 'f_last_5_away_dominance',
+                       'f_home_odds', 'f_away_odds']
 
     feature_cols = feature_cols_og.copy()
     feature_cols.extend(['game'])
@@ -180,7 +181,7 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
                        'f_last_5_encounters_in_ground',
                        'f_season_weighted_last_5_encounters', 'f_last_5_home_form', 'f_last_5_away_form',
                        'f_margin_weighted_last_5_encounters',
-                       'f_last_5_home_dominance', 'f_last_5_away_dominance']
+                       'f_last_5_home_dominance', 'f_last_5_away_dominance', 'f_home_odds', 'f_away_odds']
 
     next_round_x_useful_stats = next_round_x[visualizer_cols]
     # ------------------------------------------------------------------------------------------------------------------
@@ -210,4 +211,4 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
 
 
 # Execute Prediction ---------------------------------------------------------------------------------------------------
-run_prediction(transform_scaler=True, min_season_to_train=2005, week_id="week-4")
+run_prediction(transform_scaler=True, min_season_to_train=2005)

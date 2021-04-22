@@ -8,10 +8,13 @@ https://betfair-datascientists.github.io/modelling/AFLmodelPart1/
 https://www.aussportsbetting.com/data/historical-afl-results-and-odds-data/
 
 #### Data of 2021 Specific round
-https://www.aussportsbetting.com/category/afl/
-https://www.aussportsbetting.com/2021/03/17/afl-round-1-preview-betting-tips-7/
+* https://www.aussportsbetting.com/category/afl/
+* https://www.aussportsbetting.com/2021/03/17/afl-round-1-preview-betting-tips-7/
 
 ### Comparison Sources
+https://www.betfair.com.au/exchange/plus/
+
+### Use next week odds from
 https://www.betfair.com.au/exchange/plus/
 
 ### Notes
