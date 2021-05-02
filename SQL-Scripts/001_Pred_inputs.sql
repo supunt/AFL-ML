@@ -9,7 +9,7 @@ CREATE TABLE [dbo].[AFL_Prediction_Inputs](
 	[Venue] [nvarchar](50) NOT NULL,
 	[F_Home_Ground_Adv] [decimal](1, 0) NOT NULL,
 	[F_Away_Ground_Adv] [decimal](1, 0) NOT NULL,
-	[F_Last_5_h2h] [decimal](1, 0) NOT NULL,
+	[F_Last_5_h2h] [decimal](10, 3) NOT NULL,
 	[F_Last_5_h2h_In_Ground] [decimal](10, 3) NOT NULL,
 	[F_Season_Weighted_Last_5_h2h] [decimal](10, 3) NOT NULL,
 	[F_Margin_Weighted_Last_5_h2h] [decimal](10, 3) NOT NULL,
