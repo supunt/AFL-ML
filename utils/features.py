@@ -21,51 +21,51 @@ def get_cross_team_ground_key(home, away, ground_id):
     return f"{sorted_array[0].lower().replace(' ', '_')}::{sorted_array[1].lower().replace(' ', '_')}::{str(int(ground_id))}"
 
 
-def get_last_x_encounters_feature(match_results, x):
+def get_last_x_h2h_feature(match_results, x):
     print(f"Generating feature : Head-to-Head Result for last {x} rolling")
-    last_x_encounters = {}
+    last_x_h2h = {}
     sub_frame = match_results[['game', 'home_team', 'away_team', 'f_home_team_id', 'f_away_team_id', 'result']].copy()
 
     sub_frame = sub_frame.sort_values(by="game")
-    sub_frame[f'f_last_{x}_encounters'] = 0.0
+    sub_frame[f'f_last_{x}_h2h'] = 0.0
     sub_frame['comp_key'] = sub_frame.apply(lambda df: get_cross_team_key(df['home_team'], df['away_team']), axis=1)
 
-    last_x_encounters = {x: 0 for x in list(sub_frame['comp_key'].unique())}
+    last_x_h2h = {x: 0 for x in list(sub_frame['comp_key'].unique())}
 
     sub_frame_list = []
 
-    for key in last_x_encounters:
+    for key in last_x_h2h:
         sub_frame_copy = sub_frame[sub_frame['comp_key'] == key].copy()
         key_part_1 = key.split("::")[0]
 
         # flip score if home and away are flipped
         sub_frame_copy.loc[sub_frame_copy['home_team'].str.lower() != key_part_1, 'result'] = -sub_frame_copy['result']
-        sub_frame_copy[f'f_last_{x}_encounters'] = sub_frame_copy['result'].rolling(window=x).sum()
+        sub_frame_copy[f'f_last_{x}_h2h'] = sub_frame_copy['result'].rolling(window=x).sum()
         sub_frame_list.append(sub_frame_copy)
 
-        last_x_encounters[key] = sub_frame_copy.iloc[len(sub_frame_copy) - 1][f'f_last_{x}_encounters']
+        last_x_h2h[key] = sub_frame_copy.iloc[len(sub_frame_copy) - 1][f'f_last_{x}_h2h']
 
     concat_frame = pd.DataFrame(columns=list(sub_frame.columns))
     for item in sub_frame_list:
         concat_frame = concat_frame.append(item, ignore_index=True)
 
     concat_frame = concat_frame.sort_values(by="game")
-    concat_frame[f'f_last_{x}_encounters'] = concat_frame[f'f_last_{x}_encounters'].fillna(0.0)
+    concat_frame[f'f_last_{x}_h2h'] = concat_frame[f'f_last_{x}_h2h'].fillna(0.0)
 
-    concat_frame = concat_frame[['game', f'f_last_{x}_encounters']]
+    concat_frame = concat_frame[['game', f'f_last_{x}_h2h']]
 
     encounter_matrix_fr_object = {
         'comp_key': [],
-        f'f_last_{x}_encounters': []
+        f'f_last_{x}_h2h': []
     }
 
-    for k, v in last_x_encounters.items():
+    for k, v in last_x_h2h.items():
         encounter_matrix_fr_object['comp_key'].append(k)
-        encounter_matrix_fr_object[f'f_last_{x}_encounters'].append(v)
+        encounter_matrix_fr_object[f'f_last_{x}_h2h'].append(v)
 
-    last_x_encounters_fr = pd.DataFrame(encounter_matrix_fr_object)
+    last_x_h2h_fr = pd.DataFrame(encounter_matrix_fr_object)
 
-    return concat_frame, last_x_encounters_fr
+    return concat_frame, last_x_h2h_fr
 
 
 def __get_season_based_weight__(season, this_year):
@@ -75,23 +75,23 @@ def __get_season_based_weight__(season, this_year):
         return 0
 
 
-def get_margin_weighted_last_x_encounters_feature(match_results, x):
+def get_margin_weighted_last_x_h2h_feature(match_results, x):
     print(f"Generating feature : Head-to-Head Margin weighted result for last {x} rolling (Dominance)")
-    last_x_encounters = {}
+    last_x_h2h = {}
     sub_frame = match_results[['game', 'home_team', 'away_team',
                                'f_home_team_id', 'f_away_team_id', 'result', 'season', 'f_margin']].copy()
 
     sub_frame = sub_frame.sort_values(by="game")
-    sub_frame[f'f_margin_weighted_last_{x}_encounters'] = 0.0
+    sub_frame[f'f_margin_weighted_last_{x}_h2h'] = 0.0
     sub_frame['comp_key'] = sub_frame.apply(lambda df: get_cross_team_key(df['home_team'], df['away_team']), axis=1)
 
-    last_x_encounters = {x: 0 for x in list(sub_frame['comp_key'].unique())}
+    last_x_h2h = {x: 0 for x in list(sub_frame['comp_key'].unique())}
 
     sub_frame_list = []
 
     this_season = dt.datetime.now().year
 
-    for key in last_x_encounters:
+    for key in last_x_h2h:
         sub_frame_copy = sub_frame[sub_frame['comp_key'] == key].copy()
         key_part_1 = key.split("::")[0]
 
@@ -100,52 +100,52 @@ def get_margin_weighted_last_x_encounters_feature(match_results, x):
         sub_frame_copy['result'] = sub_frame_copy.apply(
             lambda df: df['result'] * abs(df['f_margin']), axis=1)
 
-        sub_frame_copy[f'f_margin_weighted_last_{x}_encounters'] = sub_frame_copy['result'].rolling(window=x).sum()
+        sub_frame_copy[f'f_margin_weighted_last_{x}_h2h'] = sub_frame_copy['result'].rolling(window=x).sum()
         sub_frame_list.append(sub_frame_copy)
 
-        last_x_encounters[key] = sub_frame_copy.iloc[len(sub_frame_copy) - 1][f'f_margin_weighted_last_{x}_encounters']
+        last_x_h2h[key] = sub_frame_copy.iloc[len(sub_frame_copy) - 1][f'f_margin_weighted_last_{x}_h2h']
 
     concat_frame = pd.DataFrame(columns=list(sub_frame.columns))
     for item in sub_frame_list:
         concat_frame = concat_frame.append(item, ignore_index=True)
 
     concat_frame = concat_frame.sort_values(by="game")
-    concat_frame[f'f_margin_weighted_last_{x}_encounters'] = concat_frame[
-        f'f_margin_weighted_last_{x}_encounters'].fillna(0.0)
+    concat_frame[f'f_margin_weighted_last_{x}_h2h'] = concat_frame[
+        f'f_margin_weighted_last_{x}_h2h'].fillna(0.0)
 
-    concat_frame = concat_frame[['game', f'f_margin_weighted_last_{x}_encounters']]
+    concat_frame = concat_frame[['game', f'f_margin_weighted_last_{x}_h2h']]
 
     encounter_matrix_fr_object = {
         'comp_key': [],
-        f'f_margin_weighted_last_{x}_encounters': []
+        f'f_margin_weighted_last_{x}_h2h': []
     }
 
-    for k, v in last_x_encounters.items():
+    for k, v in last_x_h2h.items():
         encounter_matrix_fr_object['comp_key'].append(k)
-        encounter_matrix_fr_object[f'f_margin_weighted_last_{x}_encounters'].append(v)
+        encounter_matrix_fr_object[f'f_margin_weighted_last_{x}_h2h'].append(v)
 
-    last_x_encounters_fr = pd.DataFrame(encounter_matrix_fr_object)
+    last_x_h2h_fr = pd.DataFrame(encounter_matrix_fr_object)
 
-    return concat_frame, last_x_encounters_fr
+    return concat_frame, last_x_h2h_fr
 
 
-def get_season_weighted_last_x_encounters_feature(match_results, x):
+def get_season_weighted_last_x_h2h_feature(match_results, x):
     print(f"Generating feature : Head-to-Head Season weighted result for last {x} rolling")
-    last_x_encounters = {}
+    last_x_h2h = {}
     sub_frame = match_results[['game', 'home_team', 'away_team',
                                'f_home_team_id', 'f_away_team_id', 'result', 'season']].copy()
 
     sub_frame = sub_frame.sort_values(by="game")
-    sub_frame[f'f_season_weighted_last_{x}_encounters'] = 0.0
+    sub_frame[f'f_season_weighted_last_{x}_h2h'] = 0.0
     sub_frame['comp_key'] = sub_frame.apply(lambda df: get_cross_team_key(df['home_team'], df['away_team']), axis=1)
 
-    last_x_encounters = {x: 0 for x in list(sub_frame['comp_key'].unique())}
+    last_x_h2h = {x: 0 for x in list(sub_frame['comp_key'].unique())}
 
     sub_frame_list = []
 
     this_season = dt.datetime.now().year
 
-    for key in last_x_encounters:
+    for key in last_x_h2h:
         sub_frame_copy = sub_frame[sub_frame['comp_key'] == key].copy()
         key_part_1 = key.split("::")[0]
 
@@ -154,50 +154,50 @@ def get_season_weighted_last_x_encounters_feature(match_results, x):
         sub_frame_copy['result'] = sub_frame_copy.apply(
             lambda df: df['result'] * __get_season_based_weight__(df['season'], this_season), axis=1)
 
-        sub_frame_copy[f'f_season_weighted_last_{x}_encounters'] = sub_frame_copy['result'].rolling(window=x).sum()
+        sub_frame_copy[f'f_season_weighted_last_{x}_h2h'] = sub_frame_copy['result'].rolling(window=x).sum()
         sub_frame_list.append(sub_frame_copy)
 
-        last_x_encounters[key] = sub_frame_copy.iloc[len(sub_frame_copy) - 1][f'f_season_weighted_last_{x}_encounters']
+        last_x_h2h[key] = sub_frame_copy.iloc[len(sub_frame_copy) - 1][f'f_season_weighted_last_{x}_h2h']
 
     concat_frame = pd.DataFrame(columns=list(sub_frame.columns))
     for item in sub_frame_list:
         concat_frame = concat_frame.append(item, ignore_index=True)
 
     concat_frame = concat_frame.sort_values(by="game")
-    concat_frame[f'f_season_weighted_last_{x}_encounters'] = concat_frame[
-        f'f_season_weighted_last_{x}_encounters'].fillna(0.0)
+    concat_frame[f'f_season_weighted_last_{x}_h2h'] = concat_frame[
+        f'f_season_weighted_last_{x}_h2h'].fillna(0.0)
 
-    concat_frame = concat_frame[['game', f'f_season_weighted_last_{x}_encounters']]
+    concat_frame = concat_frame[['game', f'f_season_weighted_last_{x}_h2h']]
 
     encounter_matrix_fr_object = {
         'comp_key': [],
-        f'f_season_weighted_last_{x}_encounters': []
+        f'f_season_weighted_last_{x}_h2h': []
     }
 
-    for k, v in last_x_encounters.items():
+    for k, v in last_x_h2h.items():
         encounter_matrix_fr_object['comp_key'].append(k)
-        encounter_matrix_fr_object[f'f_season_weighted_last_{x}_encounters'].append(v)
+        encounter_matrix_fr_object[f'f_season_weighted_last_{x}_h2h'].append(v)
 
-    last_x_encounters_fr = pd.DataFrame(encounter_matrix_fr_object)
+    last_x_h2h_fr = pd.DataFrame(encounter_matrix_fr_object)
 
-    return concat_frame, last_x_encounters_fr
+    return concat_frame, last_x_h2h_fr
 
 
-def get_last_x_encounters_in_ground_feature(match_results, x):
+def get_last_x_h2h_in_ground_feature(match_results, x):
     print(f"Generating feature : Head-to-Head on a specific Ground for last {x} rolling")
-    last_x_encounters_in_ground = {}
+    last_x_h2h_in_ground = {}
     sub_frame = match_results[['game', 'home_team', 'away_team', 'f_ground_id', 'result']].copy()
 
     sub_frame = sub_frame.sort_values(by="game")
-    sub_frame[f'f_last_{x}_encounters_in_ground'] = 0.0
+    sub_frame[f'f_last_{x}_h2h_in_ground'] = 0.0
     sub_frame['comp_key'] = sub_frame.apply(lambda df: get_cross_team_ground_key(df['home_team'], df['away_team'],
                                                                                  df['f_ground_id']), axis=1)
 
-    last_x_encounters_in_ground = {x: 0 for x in list(sub_frame['comp_key'].unique())}
+    last_x_h2h_in_ground = {x: 0 for x in list(sub_frame['comp_key'].unique())}
 
     sub_frame_list = []
 
-    for key in last_x_encounters_in_ground:
+    for key in last_x_h2h_in_ground:
         sub_frame_copy = sub_frame[sub_frame['comp_key'] == key].copy()
 
         key_part_1 = key.split("::")[0]
@@ -205,33 +205,33 @@ def get_last_x_encounters_in_ground_feature(match_results, x):
         # flip score if home and away are flipped
         sub_frame_copy.loc[sub_frame_copy['home_team'].str.lower() != key_part_1, 'result'] = -sub_frame_copy['result']
 
-        sub_frame_copy[f'f_last_{x}_encounters_in_ground'] = sub_frame_copy.iloc[:, 4].rolling(window=x).sum()
+        sub_frame_copy[f'f_last_{x}_h2h_in_ground'] = sub_frame_copy.iloc[:, 4].rolling(window=x).sum()
         sub_frame_list.append(sub_frame_copy)
 
-        last_x_encounters_in_ground[key] = sub_frame_copy.iloc[len(sub_frame_copy) - 1][
-            f'f_last_{x}_encounters_in_ground']
+        last_x_h2h_in_ground[key] = sub_frame_copy.iloc[len(sub_frame_copy) - 1][
+            f'f_last_{x}_h2h_in_ground']
 
     concat_frame = pd.DataFrame(columns=list(sub_frame.columns))
     for item in sub_frame_list:
         concat_frame = concat_frame.append(item, ignore_index=True)
 
     concat_frame = concat_frame.sort_values(by="game")
-    concat_frame[f'f_last_{x}_encounters_in_ground'] = concat_frame[f'f_last_{x}_encounters_in_ground'].fillna(0.0)
+    concat_frame[f'f_last_{x}_h2h_in_ground'] = concat_frame[f'f_last_{x}_h2h_in_ground'].fillna(0.0)
 
-    concat_frame = concat_frame[['game', f'f_last_{x}_encounters_in_ground']]
+    concat_frame = concat_frame[['game', f'f_last_{x}_h2h_in_ground']]
 
     encounter_matrix_fr_object = {
         'comp_key': [],
-        f'f_last_{x}_encounters_in_ground': []
+        f'f_last_{x}_h2h_in_ground': []
     }
 
-    for k, v in last_x_encounters_in_ground.items():
+    for k, v in last_x_h2h_in_ground.items():
         encounter_matrix_fr_object['comp_key'].append(k)
-        encounter_matrix_fr_object[f'f_last_{x}_encounters_in_ground'].append(v)
+        encounter_matrix_fr_object[f'f_last_{x}_h2h_in_ground'].append(v)
 
-    last_x_encounters_gr_fr = pd.DataFrame(encounter_matrix_fr_object)
+    last_x_h2h_gr_fr = pd.DataFrame(encounter_matrix_fr_object)
 
-    return concat_frame, last_x_encounters_gr_fr
+    return concat_frame, last_x_h2h_gr_fr
 
 
 def __get_array_sum__(arr):

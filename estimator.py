@@ -1,9 +1,9 @@
 from data_sources import set_load_cached
 from sklearn.preprocessing import StandardScaler
 from utils.algo_tuner import find_best_algorithms
-from utils.features import get_last_x_encounters_feature, get_last_x_encounters_in_ground_feature,\
-    get_season_weighted_last_x_encounters_feature, get_last_x_matches_form_feature, \
-    get_margin_weighted_last_x_encounters_feature, get_last_x_matches_dominance_feature
+from utils.features import get_last_x_h2h_feature, get_last_x_h2h_in_ground_feature,\
+    get_season_weighted_last_x_h2h_feature, get_last_x_matches_form_feature, \
+    get_margin_weighted_last_x_h2h_feature, get_last_x_matches_dominance_feature
 
 set_load_cached(False)
 
@@ -20,16 +20,16 @@ def estimate(transform_scaler=True, min_season_to_train=2000):
     match_results['f_away_ground_adv'] = match_results['f_away_ground_adv'].apply(lambda x: 1.0 if x else 0.0)
 
     # Features START ---------------------------------------------------------------------------------------------------
-    last_5_encounter_feature, encounter_5_matrix = get_last_x_encounters_feature(match_results, 5)
-    last_5_encounter_ground_feature, encounter_5_ground_matrix = get_last_x_encounters_in_ground_feature(match_results,
+    last_5_encounter_feature, encounter_5_matrix = get_last_x_h2h_feature(match_results, 5)
+    last_5_encounter_ground_feature, encounter_5_ground_matrix = get_last_x_h2h_in_ground_feature(match_results,
                                                                                                          5)
     season_based_last_5_encounter_feature, season_based_encounter_5_matrix = \
-        get_season_weighted_last_x_encounters_feature(match_results, 5)
+        get_season_weighted_last_x_h2h_feature(match_results, 5)
 
     last_5_match_form_feature, last_5_match_from_frame = get_last_x_matches_form_feature(match_results, 5)
 
     last_5_matches_h2h_dominance_feature, last_5_h2h_match_dominance_frame = \
-        get_margin_weighted_last_x_encounters_feature(match_results, 5)
+        get_margin_weighted_last_x_h2h_feature(match_results, 5)
 
     last_5_matches_dominance_feature, last_5_match_dominance_frame = \
         get_last_x_matches_dominance_feature(match_results, 5)
@@ -47,9 +47,9 @@ def estimate(transform_scaler=True, min_season_to_train=2000):
 
     train_df = match_results[match_results.season == __year__]
     feature_cols = ['f_away_team_id', 'f_home_team_id', 'f_ground_id', 'f_home_odds', 'f_away_odds',
-                    'f_home_ground_adv', 'f_away_ground_adv', 'f_last_5_encounters',
-                    'f_last_5_encounters_in_ground', 'f_last_5_away_form', 'f_last_5_home_form',
-                    'f_margin_weighted_last_5_encounters', 'f_last_5_home_dominance', 'f_last_5_away_dominance']
+                    'f_home_ground_adv', 'f_away_ground_adv', 'f_last_5_h2h',
+                    'f_last_5_h2h_in_ground', 'f_last_5_away_form', 'f_last_5_home_form',
+                    'f_margin_weighted_last_5_h2h', 'f_last_5_home_dominance', 'f_last_5_away_dominance']
 
     feature_cols_original = feature_cols.copy()
     feature_cols.extend(['game'])
