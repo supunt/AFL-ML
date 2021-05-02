@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from utils.features import get_last_x_h2h_feature, get_cross_team_key, get_last_x_h2h_in_ground_feature, \
     get_cross_team_ground_key, get_season_weighted_last_x_h2h_feature, get_last_x_matches_form_feature, \
     get_margin_weighted_last_x_h2h_feature, get_last_x_matches_dominance_feature
+import argparse
 
 
 set_load_cached(False)
@@ -237,4 +238,12 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
 
 
 # Execute Prediction ---------------------------------------------------------------------------------------------------
-run_prediction(transform_scaler=True, min_season_to_train=2005, persist=False)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Generate AFL Predictions for next round')
+    parser.add_argument('--persist', action='store_true', help='Persist to Database')
+
+    args = parser.parse_args()
+    print(f"Persist to Database : {'ENABLED' if args.persist else 'DISABLED'}")
+
+    run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id="Week-6")
