@@ -1,5 +1,5 @@
 CREATE TABLE [dbo].[AFL_Predictions](
-	[Run_Id_] [nvarchar](50) NOT NULL,
+	[Run_Id] [nvarchar](50) NOT NULL,
 	[Run_Id_DateTime] [datetime] NOT NULL,
 	[Game] [int] NOT NULL,
 	[Date] [date] NOT NULL,
@@ -8,7 +8,6 @@ CREATE TABLE [dbo].[AFL_Predictions](
 	[Away_Team] [nvarchar](25) NOT NULL,
 	[Venue] [nvarchar](50) NOT NULL,
 	[Prediction] [nvarchar](25) NOT NULL,
-	[Prediction] [Result](25) NULL,
     PRIMARY KEY CLUSTERED
     (
         [Run_Id_DateTime] ASC,

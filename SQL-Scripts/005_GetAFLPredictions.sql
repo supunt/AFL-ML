@@ -27,7 +27,9 @@ CREATE OR ALTER VIEW [dbo].[GetAFLPredictions] AS
 		pred_Inputs.F_Home_Odds,
 		pred_Inputs.F_Away_Odds,
 		preds.Prediction,
-		preds.Result
+		res.Result,
+		Accurate = CASE WHEN res.Result = preds.Prediction THEN 1 ELSE 0 END
 	FROM [dbo].[AFL_Predictions] preds
 	INNER JOIN [dbo].[AFL_Prediction_Inputs] pred_Inputs ON pred_Inputs.game = preds.game and pred_Inputs.Run_Id_DateTime = preds.Run_Id_DateTime
 	INNER JOIN CTE ON CTE.MaxRunIdDt = pred_Inputs.Run_Id_DateTime
+	LEFT JOIN [dbo].[AFL_Results] res on res.game = pred_Inputs.game and res.[date] = pred_Inputs.[date]
