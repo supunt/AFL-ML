@@ -21,3 +21,6 @@ https://www.betfair.com.au/exchange/plus/
 
 #### 2021-03-21
 `ensemble.BaggingClassifier()` was a bit too accurate -> 0.9784740309483683
+
+#### 2021-05-02
+Flipped Result of Sydney vs Geelong due to Referee Error (01-May-21)

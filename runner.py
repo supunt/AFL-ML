@@ -246,4 +246,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(f"Persist to Database : {'ENABLED' if args.persist else 'DISABLED'}")
 
-    run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id="Week-6")
+    run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist)
