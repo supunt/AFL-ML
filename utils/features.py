@@ -279,7 +279,7 @@ def get_last_x_matches_form_feature(match_results, x):
             last_x_match_form[row_away] = last_x_match_form[row_away][1:]
             sub_frame.loc[index, f'f_last_{x}_away_form'] = __get_array_sum__(last_x_match_form[row_away])
 
-    ret_frame = sub_frame[['game', f'f_last_{x}_home_form', f'f_last_{x}_away_form']]
+    ret_frame = sub_frame[['game', f'f_last_{x}_home_form', f'f_last_{x}_away_form']].copy()
     ret_frame[f'f_last_{x}_home_form'] = ret_frame[f'f_last_{x}_home_form'].fillna(0.0)
     ret_frame[f'f_last_{x}_away_form'] = ret_frame[f'f_last_{x}_home_form'].fillna(0.0)
 
@@ -336,7 +336,7 @@ def get_last_x_matches_dominance_feature(match_results, x):
             last_x_match_form[row_away] = last_x_match_form[row_away][1:]
             sub_frame.loc[index, f'f_last_{x}_away_dominance'] = __get_array_sum__(last_x_match_form[row_away])
 
-    ret_frame = sub_frame[['game', f'f_last_{x}_home_dominance', f'f_last_{x}_away_dominance']]
+    ret_frame = sub_frame[['game', f'f_last_{x}_home_dominance', f'f_last_{x}_away_dominance']].copy()
     ret_frame[f'f_last_{x}_home_dominance'] = ret_frame[f'f_last_{x}_home_dominance'].fillna(0.0)
     ret_frame[f'f_last_{x}_away_dominance'] = ret_frame[f'f_last_{x}_home_dominance'].fillna(0.0)
 

@@ -1,10 +1,15 @@
 import pandas as pd
-from data_sources import __loading_cached__
 import datetime as dt
+from python_json_config import ConfigBuilder
+from typing import List
 
+# create config parser
+__builder__ = ConfigBuilder()
 
-__cached_file_path__ = 'H:\\temp\\_cached_race_data.csv'
-__next_week_file_path__ = '.\\data_samples\\next-week.xlsx'
+# parse config and extract
+__config__ = __builder__.parse_config('config.json')
+__base_path__ = __config__.stats_data.path
+__history_path_format__ = __config__.stats_data.history_path_format
 
 team_home_ground_info = None
 
@@ -17,11 +22,11 @@ def is_home_for_team(team_name, ground):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def get_next_week_frame(max_game_id_in_history, week_id=None):
-    path = __next_week_file_path__
+def __get_next_week_frame__(max_game_id_in_history, week_id=None):
+    path = f'{__base_path__}{__config__.stats_data.next_week_file}'
 
     if week_id is not None:
-        path = f".\\data_samples\\archived\\{week_id}\\next-week.xlsx"
+        path = f"{__history_path_format__.format(week_id=week_id)}{__config__.stats_data.next_week_file}"
 
     next_week_data = pd.read_excel(path, sheet_name="Data", header=0)
 
@@ -40,72 +45,87 @@ def get_next_week_frame(max_game_id_in_history, week_id=None):
     return next_week_data
 
 
-def get_cleaned_data(week_id=None, cache_past_data=False):
-    # if __loading_cached__:
-    #     print('Loading from last cached file')
-    #     past_match_data_min = pd.read_csv(__cached_file_path__, header=0)
-    #
-    #     return past_match_data_min, get_next_week_frame(past_match_data_min['game'].max())
-
-    base_path = ".\\data_samples"
+# ----------------------------------------------------------------------------------------------------------------------
+def __load_past_match_data__(week_id) -> pd.DataFrame:
+    print("1. Loading Match data (minimized)")
+    file_path = f"{__base_path__}{__config__.stats_data.history_file}"
 
     if week_id is not None:
-        base_path += f"\\archived\\{week_id}"
+        file_path = f"{__history_path_format__.format(week_id=week_id)}{__config__.stats_data.history_file}"
 
-    # ------------------------------------------------------------------------------------------------------------------
-    print("1. Loading Match data (minimized)")
-    __past_match_data_min__ = pd.read_excel(f"{base_path}\\afl-reduced_results.xlsx", sheet_name="Data", header=0
+    __past_match_data_min__ = pd.read_excel(file_path, sheet_name="Data",
+                                            header=0
                                             , dtype=str)
 
     for index, row in __past_match_data_min__.iterrows():
         __past_match_data_min__.loc[index, 'game'] = int(len(__past_match_data_min__) - index)
 
-    # ------------------------------------------------------------------------------------------------------------------
+    return __past_match_data_min__
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def __get_ground_name_mappings__(venus_in_data: List) -> pd.DataFrame:
     print("2. Loading Match Ground Name Mappings")
-    __afl_ground_names__ = pd.read_excel(f".\\data_samples\\afl_ground_names.xlsx", sheet_name="Sheet1", header=0,
+    __afl_ground_names__ = pd.read_excel(f"{__base_path__}{__config__.meta_data.ground_names_file}",
+                                         sheet_name="Sheet1", header=0,
                                          dtype=str)
     __afl_ground_names__ = __afl_ground_names__.fillna('')
-    __venues_in_data__ = list(__past_match_data_min__['Venue'].str.lower().unique())
-
     print("\t2.1. Set Name In Data to Ground Names")
     for index, row in __afl_ground_names__.iterrows():
-        if row['Ground_Name'].lower() in __venues_in_data__:
+        if row['Ground_Name'].lower() in venus_in_data:
             __afl_ground_names__.loc[index, 'Name_In_Data'] = row['Ground_Name']
         else:
             for i in range(1, 4):
-                if row[f'Other_Name_{i}'] != '' and row[f'Other_Name_{i}'].lower() in __venues_in_data__:
+                if row[f'Other_Name_{i}'] != '' and row[f'Other_Name_{i}'].lower() in venus_in_data:
                     __afl_ground_names__.loc[index, 'Name_In_Data'] = row[f'Other_Name_{i}']
                     break
 
-    afl_ground_names = __afl_ground_names__.copy()
+    return __afl_ground_names__
 
-    # ------------------------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------------------------------
+def __get_home_ground_info__(afl_ground_names: pd.DataFrame) -> pd.DataFrame:
     print("3. Loading Home Ground information")
-    __team_home_ground_info__ = pd.read_excel(f".\\data_samples\\afl-home-grounds.xlsx", sheet_name="Sheet1", header=0,
-                                              dtype=str)
-    __team_home_ground_info__ = __team_home_ground_info__.fillna('')
+    t_home_ground_info = pd.read_excel(f"{__base_path__}{__config__.meta_data.home_grounds_file}",
+                                       sheet_name="Sheet1", header=0,
+                                       dtype=str)
+    t_home_ground_info = t_home_ground_info.fillna('')
 
     print("\t3.1. Set Name In Data to Home Ground Names")
-    for index, row in __team_home_ground_info__.iterrows():
+    for index, row in t_home_ground_info.iterrows():
         ground_name = row['Ground_Name']
 
-        if len(__afl_ground_names__[__afl_ground_names__['Ground_Name'] == ground_name]) > 0:
-            selection = list(__afl_ground_names__[__afl_ground_names__['Ground_Name'] == ground_name]['Name_In_Data'])
-            id_selection = list(__afl_ground_names__[__afl_ground_names__['Ground_Name'] == ground_name]['Ground_Id'])
-            __team_home_ground_info__.loc[index, 'Name_In_Data'] = selection[0]
-            __team_home_ground_info__.loc[index, 'Ground_Id'] = id_selection[0]
+        if len(afl_ground_names[afl_ground_names['Ground_Name'] == ground_name]) > 0:
+            selection = list(afl_ground_names[afl_ground_names['Ground_Name'] == ground_name]['Name_In_Data'])
+            id_selection = list(afl_ground_names[afl_ground_names['Ground_Name'] == ground_name]['Ground_Id'])
+            t_home_ground_info.loc[index, 'Name_In_Data'] = selection[0]
+            t_home_ground_info.loc[index, 'Ground_Id'] = id_selection[0]
 
         for i in range(1, 4):
-            if len(__afl_ground_names__[__afl_ground_names__[f'Other_Name_{i}'] == ground_name]) > 0:
-                selection = list(__afl_ground_names__[
-                                     __afl_ground_names__[f'Other_Name_{i}'] == ground_name]['Name_In_Data'])
-                id_selection = list(__afl_ground_names__[
-                                     __afl_ground_names__[f'Other_Name_{i}'] == ground_name]['Ground_Id'])
+            if len(afl_ground_names[afl_ground_names[f'Other_Name_{i}'] == ground_name]) > 0:
+                selection = list(afl_ground_names[
+                                     afl_ground_names[f'Other_Name_{i}'] == ground_name]['Name_In_Data'])
+                id_selection = list(afl_ground_names[
+                                        afl_ground_names[f'Other_Name_{i}'] == ground_name]['Ground_Id'])
 
-                __team_home_ground_info__.loc[index, 'Name_In_Data'] = selection[0]
-                __team_home_ground_info__.loc[index, 'Ground_Id'] = id_selection[0]
+                t_home_ground_info.loc[index, 'Name_In_Data'] = selection[0]
+                t_home_ground_info.loc[index, 'Ground_Id'] = id_selection[0]
                 break
 
+    return t_home_ground_info
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def get_cleaned_data(week_id=None):
+    # Load Historical Data
+    __past_match_data_min__ = __load_past_match_data__(week_id)
+
+    # Load Ground Name Mappings
+    afl_ground_names = __get_ground_name_mappings__(
+        venus_in_data=list(__past_match_data_min__['Venue'].str.lower().unique()))
+
+    # Load home ground information
+    __team_home_ground_info__ = __get_home_ground_info__(afl_ground_names)
     global team_home_ground_info
     team_home_ground_info = __team_home_ground_info__.copy()
 
@@ -189,11 +209,7 @@ def get_cleaned_data(week_id=None, cache_past_data=False):
 
     past_match_data_min = __past_match_data_min__.copy()
 
-    if cache_past_data:
-        print(f"10. Cached File written to {__cached_file_path__}")
-        past_match_data_min.to_csv(__cached_file_path__)
-
-    next_week_frame = get_next_week_frame(past_match_data_min['game'].max(), week_id)
+    next_week_frame = __get_next_week_frame__(past_match_data_min['game'].max(), week_id)
 
     next_week_frame = next_week_frame.merge(
         afl_ground_names[['Name_In_Data', 'Ground_Id']].copy().drop_duplicates(subset=['Name_In_Data']),
@@ -246,7 +262,7 @@ def get_cleaned_data(week_id=None, cache_past_data=False):
     next_week_frame['home_ground_adv_tf'] = next_week_frame['home_ground_adv']
     next_week_frame['away_ground_adv_tf'] = next_week_frame['away_ground_adv']
 
-    past_match_data_min = past_match_data_min.rename(columns={
+    renames_mapping = {
         'margin': 'f_margin',
         'away_team_id': 'f_away_team_id',
         'home_team_id': 'f_home_team_id',
@@ -255,18 +271,9 @@ def get_cleaned_data(week_id=None, cache_past_data=False):
         'ground_id': 'f_ground_id',
         'home_odds': 'f_home_odds',
         'away_odds': 'f_away_odds'
-    })
-
-    next_week_frame = next_week_frame.rename(columns={
-        'margin': 'f_margin',
-        'away_team_id': 'f_away_team_id',
-        'home_team_id': 'f_home_team_id',
-        'home_ground_adv': 'f_home_ground_adv',
-        'away_ground_adv': 'f_away_ground_adv',
-        'ground_id': 'f_ground_id',
-        'home_odds': 'f_home_odds',
-        'away_odds': 'f_away_odds'
-    })
+    }
+    past_match_data_min = past_match_data_min.rename(columns=renames_mapping)
+    next_week_frame = next_week_frame.rename(columns=renames_mapping)
 
     past_match_data_min['f_home_ground_adv'] = past_match_data_min['f_home_ground_adv'].apply(
         lambda x: 1.0 if x else 0.0)

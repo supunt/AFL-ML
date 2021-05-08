@@ -1,4 +1,3 @@
-from data_sources import set_load_cached
 from sklearn.preprocessing import StandardScaler
 from utils.algo_tuner import __known_best_params__
 from sklearn import linear_model
@@ -9,10 +8,6 @@ from utils.features import get_last_x_h2h_feature, get_cross_team_key, get_last_
     get_cross_team_ground_key, get_season_weighted_last_x_h2h_feature, get_last_x_matches_form_feature, \
     get_margin_weighted_last_x_h2h_feature, get_last_x_matches_dominance_feature
 import argparse
-
-
-set_load_cached(False)
-
 from data_sources import data_store
 
 
@@ -21,19 +16,20 @@ def persist_data(next_week_inputs: pd.DataFrame, prediction, week_id=None):
     run_id = run_id_dt.strftime('%Y-%m-%d_%H%M%S_%f')[0:-3]
     engine = create_engine('mssql+pyodbc://@localhost/AFL?driver=ODBC+Driver+17+for+SQL+Server', echo=False)
 
+    next_week_inputs_dump = next_week_inputs.copy()
     with engine.begin() as connection:
-        next_week_inputs['Run_Id_DateTime'] = run_id_dt
+        next_week_inputs_dump['Run_Id_DateTime'] = run_id_dt
         prediction['Run_Id_DateTime'] = run_id_dt
 
-        next_week_inputs['Run_Id'] = run_id
+        next_week_inputs_dump['Run_Id'] = run_id
         prediction['Run_Id'] = run_id
 
-        next_week_inputs['Week'] = week_id if week_id is not None else ''
+        next_week_inputs_dump['Week'] = week_id if week_id is not None else ''
         prediction['Week'] = week_id if week_id is not None else ''
         prediction = prediction.rename(columns={'result': 'prediction'})
 
-        next_week_inputs.to_sql(name="AFL_Prediction_Inputs", con=connection,
-                                schema="dbo", if_exists='append', index=False)
+        next_week_inputs_dump.to_sql(name="AFL_Prediction_Inputs", con=connection,
+                                     schema="dbo", if_exists='append', index=False)
 
         prediction.to_sql(name="AFL_Predictions", con=connection, schema="dbo", if_exists='append', index=False)
 

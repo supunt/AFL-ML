@@ -1,0 +1,12 @@
+{
+  "stats_data" : {
+    "path" : ".\\data_samples\\",
+    "history_path_format": ".\\data_samples\\archived\\{week_id}\\",
+    "history_file" : "afl-reduced_results.xlsx",
+    "next_week_file": "next-week.xlsx"
+  },
+  "meta_data" : {
+    "home_grounds_file": "afl-home-grounds.xlsx",
+    "ground_names_file": "afl_ground_names.xlsx"
+  }
+}
