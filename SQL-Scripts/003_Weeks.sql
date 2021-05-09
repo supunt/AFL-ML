@@ -19,4 +19,6 @@ INSERT INTO [dbo].[AFL_Weeks] ([Season], [Week], [WeekName]) VALUES
 (2021, 3, 'Week-3'),
 (2021, 4, 'Week-4'),
 (2021, 5, 'Week-5'),
-(2021, 6, 'Week-6')
+(2021, 6, 'Week-6'),
+(2021, 7, 'Week-7'),
+(2021, 8, 'Week-8')
