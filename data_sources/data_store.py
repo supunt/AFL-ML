@@ -157,9 +157,7 @@ def get_cleaned_data(week_id=None):
     __past_match_data_min__ = __past_match_data_min__.drop(columns=['name_in_data'])
 
     teams = pd.DataFrame(__past_match_data_min__['home_team']).drop_duplicates().reset_index(drop=True)
-    teams = teams.rename(columns={
-        'home_team': 'team'
-    })
+    teams = teams.rename(columns={'home_team': 'team'})
 
     for index, row in teams.iterrows():
         teams.loc[index, 'team_id'] = index + 1
@@ -272,6 +270,7 @@ def get_cleaned_data(week_id=None):
         'home_odds': 'f_home_odds',
         'away_odds': 'f_away_odds'
     }
+
     past_match_data_min = past_match_data_min.rename(columns=renames_mapping)
     next_week_frame = next_week_frame.rename(columns=renames_mapping)
 
