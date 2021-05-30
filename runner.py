@@ -89,6 +89,10 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
 
     match_results_fwd = match_results_fwd.merge(last_5_matches_dominance_feature, on="game", how="left")
 
+    match_results_fwd = match_results_fwd.merge(this_season_form_feature, on="game", how="left")
+    match_results_fwd['f_this_season_home_form'] = match_results_fwd['f_this_season_home_form'].fillna(0.0)
+    match_results_fwd['f_this_season_away_form'] = match_results_fwd['f_this_season_away_form'].fillna(0.0)
+
     # ------------------------------------------------------------------------------------------------------------------
 
     train_df = match_results_fwd[~match_results_fwd.game.isin(next_week_frame.game)]
@@ -99,7 +103,7 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
                        'f_home_ground_adv', 'f_away_ground_adv', 'f_last_5_h2h', 'f_last_5_h2h_in_ground',
                        'f_season_weighted_last_5_h2h', 'f_last_5_away_form', 'f_last_5_home_form',
                        'f_margin_weighted_last_5_h2h', 'f_last_5_home_dominance', 'f_last_5_away_dominance',
-                       'f_home_odds', 'f_away_odds']
+                       'f_home_odds', 'f_away_odds', 'f_this_season_home_form', 'f_this_season_away_form']
 
     feature_cols = feature_cols_og.copy()
     feature_cols.extend(['game'])
@@ -125,7 +129,8 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
     next_round_x = next_round_x.drop(
         columns=['f_last_5_h2h', 'f_last_5_h2h_in_ground', 'f_season_weighted_last_5_h2h',
                  'f_last_5_home_form', 'f_last_5_away_form', 'f_margin_weighted_last_5_h2h',
-                 'f_last_5_home_dominance', 'f_last_5_away_dominance'])
+                 'f_last_5_home_dominance', 'f_last_5_away_dominance',
+                 'f_this_season_home_form', 'f_this_season_away_form'])
 
     next_round_x['unordered_comp_key'] = next_round_x.apply(
         lambda df: f"{df['home_team'].lower().replace(' ', '_')}::{df['away_team'].lower().replace(' ', '_')}", axis=1)
@@ -198,12 +203,21 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
     next_round_x = next_round_x.merge(last_5_match_from_frame, left_on='away_team', right_on='team', how='left')
     next_round_x = next_round_x.rename(columns={"last_5_form": "f_last_5_away_form"})
 
-    # last known form --------------------------------------------------------------------------------------------------
+    # last known dominance ---------------------------------------------------------------------------------------------
     next_round_x = next_round_x.merge(last_5_match_dominance_frame, left_on='home_team', right_on='team', how='left')
     next_round_x = next_round_x.rename(columns={"last_5_dominance": "f_last_5_home_dominance"})
 
     next_round_x = next_round_x.merge(last_5_match_dominance_frame, left_on='away_team', right_on='team', how='left')
     next_round_x = next_round_x.rename(columns={"last_5_dominance": "f_last_5_away_dominance"})
+
+    # this season form -------------------------------------------------------------------------------------------------
+    next_round_x = next_round_x.merge(this_season_form_frame, left_on='home_team', right_on='team', how='left')
+    next_round_x = next_round_x.rename(columns={"f_this_season_form": "f_this_season_home_form"})
+    next_round_x = next_round_x.rename(columns={"f_this_season_results": "this_season_home_results"})
+
+    next_round_x = next_round_x.merge(this_season_form_frame, left_on='away_team', right_on='team', how='left')
+    next_round_x = next_round_x.rename(columns={"f_this_season_form": "f_this_season_home_form"})
+    next_round_x = next_round_x.rename(columns={"f_this_season_results": "this_season_away_results"})
 
     # ------------------------------------------------------------------------------------------------------------------
     # This frame is for easier visualization
@@ -212,7 +226,9 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
                        'f_home_ground_adv', 'f_away_ground_adv', 'f_last_5_h2h', 'f_last_5_h2h_in_ground',
                        'f_season_weighted_last_5_h2h', 'f_margin_weighted_last_5_h2h',
                        'f_last_5_home_form', 'f_last_5_home_dominance', 'f_last_5_away_form',
-                       'f_last_5_away_dominance', 'f_home_odds', 'f_away_odds']
+                       'f_last_5_away_dominance', 'f_home_odds', 'f_away_odds',
+                       'f_this_season_home_form', 'f_this_season_away_form',
+                       'this_season_home_results', 'this_season_away_results']
 
     next_round_x_useful_stats = next_round_x[visualizer_cols]
     # ------------------------------------------------------------------------------------------------------------------

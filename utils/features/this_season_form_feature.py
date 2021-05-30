@@ -50,7 +50,7 @@ def get_this_season_matches_form_feature(match_results, season):
 
     for key in last_x_match_form:
         last_x_match_form_sums['team'].append(key)
-        last_x_match_form_sums['this_season_form'].append(get_array_sum(last_x_match_form[key]))
+        last_x_match_form_sums['f_this_season_form'].append(get_array_sum(last_x_match_form[key]))
         last_x_match_form_sums['this_season_results'].append(str(last_x_match_form[key]))
 
     last_x_match_form_frame = pd.DataFrame(last_x_match_form_sums)
