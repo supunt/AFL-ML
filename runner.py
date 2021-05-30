@@ -256,4 +256,5 @@ if __name__ == "__main__":
     # run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id='week-8')
     # run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id='week-9')
     # run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id='week-10')
-    run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist)
+    run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id='week-11')
+    # run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist)
