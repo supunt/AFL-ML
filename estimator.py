@@ -1,9 +1,12 @@
 from data_sources import set_load_cached
 from sklearn.preprocessing import StandardScaler
 from utils.algo_tuner import find_best_algorithms
-from utils.features import get_last_x_h2h_feature, get_last_x_h2h_in_ground_feature,\
-    get_season_weighted_last_x_h2h_feature, get_last_x_matches_form_feature, \
-    get_margin_weighted_last_x_h2h_feature, get_last_x_matches_dominance_feature
+from utils.features.last_x_h2h_feature import get_last_x_h2h_feature
+from utils.features.last_x_h2h_in_ground_feature import get_last_x_h2h_in_ground_feature
+from utils.features.season_weighted_last_x_h2h_feature import get_season_weighted_last_x_h2h_feature
+from utils.features.last_x_matches_form_feature import get_last_x_matches_form_feature
+from utils.features.margin_weighted_last_x_h2h_feature import get_margin_weighted_last_x_h2h_feature
+from utils.features.last_x_matches_dominance_feature import get_last_x_matches_dominance_feature
 
 set_load_cached(False)
 
