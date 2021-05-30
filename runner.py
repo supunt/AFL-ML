@@ -13,12 +13,11 @@ from utils.features.season_weighted_last_x_h2h_feature import get_season_weighte
 from utils.features.last_x_matches_form_feature import get_last_x_matches_form_feature
 from utils.features.margin_weighted_last_x_h2h_feature import get_margin_weighted_last_x_h2h_feature
 from utils.features.last_x_matches_dominance_feature import get_last_x_matches_dominance_feature
-import argparse
-
-
-set_load_cached(False)
-
 from data_sources import data_store
+
+from utils.features.this_season_form_feature import get_this_season_matches_form_feature
+
+import argparse
 
 
 def persist_data(next_week_inputs: pd.DataFrame, prediction, week_id=None):
@@ -65,6 +64,8 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
 
     last_5_matches_dominance_feature, last_5_match_dominance_frame = \
         get_last_x_matches_dominance_feature(match_results, 5)
+
+    this_season_form_feature, this_season_form_frame = get_this_season_matches_form_feature(match_results, 2021)
 
     # ------------------------------------------------------------------------------------------------------------------
     # - Adding features to train data set
