@@ -42,7 +42,7 @@ def get_last_x_matches_form_feature(match_results, x):
 
     ret_frame = sub_frame[['game', f'f_last_{x}_home_form', f'f_last_{x}_away_form']].copy()
     ret_frame[f'f_last_{x}_home_form'] = ret_frame[f'f_last_{x}_home_form'].fillna(0.0)
-    ret_frame[f'f_last_{x}_away_form'] = ret_frame[f'f_last_{x}_home_form'].fillna(0.0)
+    ret_frame[f'f_last_{x}_away_form'] = ret_frame[f'f_last_{x}_away_form'].fillna(0.0)
 
     last_x_match_form_sums = {
         'team': [],

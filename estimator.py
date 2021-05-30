@@ -15,7 +15,7 @@ from data_sources import data_store
 __year__ = 2019
 
 
-def estimate(transform_scaler=True, min_season_to_train=2000):
+def estimate(transform_scaler=True, min_season_to_train=2015):
     print('Load data')
     match_results, next_week_frame = data_store.get_cleaned_data()
 

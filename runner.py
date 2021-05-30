@@ -18,6 +18,7 @@ from data_sources import data_store
 from utils.features.this_season_form_feature import get_this_season_matches_form_feature
 
 import argparse
+from result_processor import process_results
 
 
 def persist_data(next_week_inputs: pd.DataFrame, prediction, week_id=None):
@@ -252,15 +253,18 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(f"Persist to Database : {'ENABLED' if args.persist else 'DISABLED'}")
 
-    # run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id='week-1')
-    # run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id='week-2')
-    # run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id='week-3')
-    # run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id='week-4')
-    # run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id='week-5')
-    # run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id='week-6')
-    # run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id='week-7')
-    # run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id='week-8')
-    # run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id='week-9')
-    # run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id='week-10')
-    run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist, week_id='week-11')
-    # run_prediction(transform_scaler=True, min_season_to_train=2005, persist=args.persist)
+    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-1')
+    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-2')
+    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-3')
+    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-4')
+    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-5')
+    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-6')
+    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-7')
+    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-8')
+    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-9')
+    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-10')
+    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-11')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist)
+
+    process_results()
+
