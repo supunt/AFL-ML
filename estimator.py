@@ -14,6 +14,8 @@ from data_sources import data_store
 
 __year__ = 2019
 
+min_window_size = 5
+
 
 def estimate(transform_scaler=True, min_season_to_train=2015):
     print('Load data')
@@ -23,19 +25,19 @@ def estimate(transform_scaler=True, min_season_to_train=2015):
     match_results['f_away_ground_adv'] = match_results['f_away_ground_adv'].apply(lambda x: 1.0 if x else 0.0)
 
     # Features START ---------------------------------------------------------------------------------------------------
-    last_5_encounter_feature, encounter_5_matrix = get_last_x_h2h_feature(match_results, 5)
+    last_5_encounter_feature, encounter_5_matrix = get_last_x_h2h_feature(match_results, min_window_size)
     last_5_encounter_ground_feature, encounter_5_ground_matrix = get_last_x_h2h_in_ground_feature(match_results,
-                                                                                                         5)
+                                                                                                  min_window_size)
     season_based_last_5_encounter_feature, season_based_encounter_5_matrix = \
-        get_season_weighted_last_x_h2h_feature(match_results, 5)
+        get_season_weighted_last_x_h2h_feature(match_results, min_window_size)
 
-    last_5_match_form_feature, last_5_match_from_frame = get_last_x_matches_form_feature(match_results, 5)
+    last_5_match_form_feature, last_5_match_from_frame = get_last_x_matches_form_feature(match_results, min_window_size)
 
     last_5_matches_h2h_dominance_feature, last_5_h2h_match_dominance_frame = \
-        get_margin_weighted_last_x_h2h_feature(match_results, 5)
+        get_margin_weighted_last_x_h2h_feature(match_results, min_window_size)
 
     last_5_matches_dominance_feature, last_5_match_dominance_frame = \
-        get_last_x_matches_dominance_feature(match_results, 5)
+        get_last_x_matches_dominance_feature(match_results, min_window_size)
 
     # Features END -----------------------------------------------------------------------------------------------------
 
