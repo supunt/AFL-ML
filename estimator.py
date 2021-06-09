@@ -17,7 +17,7 @@ __year__ = 2019
 min_window_size = 5
 
 
-def estimate(transform_scaler=True, min_season_to_train=2015):
+def estimate(transform_scaler=True, min_season_to_train=2015, window_size=min_window_size):
     print('Load data')
     match_results, next_week_frame = data_store.get_cleaned_data()
 
@@ -25,19 +25,19 @@ def estimate(transform_scaler=True, min_season_to_train=2015):
     match_results['f_away_ground_adv'] = match_results['f_away_ground_adv'].apply(lambda x: 1.0 if x else 0.0)
 
     # Features START ---------------------------------------------------------------------------------------------------
-    last_5_encounter_feature, encounter_5_matrix = get_last_x_h2h_feature(match_results, min_window_size)
+    last_5_encounter_feature, encounter_5_matrix = get_last_x_h2h_feature(match_results, window_size)
     last_5_encounter_ground_feature, encounter_5_ground_matrix = get_last_x_h2h_in_ground_feature(match_results,
-                                                                                                  min_window_size)
+                                                                                                  window_size)
     season_based_last_5_encounter_feature, season_based_encounter_5_matrix = \
-        get_season_weighted_last_x_h2h_feature(match_results, min_window_size)
+        get_season_weighted_last_x_h2h_feature(match_results, window_size)
 
-    last_5_match_form_feature, last_5_match_from_frame = get_last_x_matches_form_feature(match_results, min_window_size)
+    last_5_match_form_feature, last_5_match_from_frame = get_last_x_matches_form_feature(match_results, window_size)
 
     last_5_matches_h2h_dominance_feature, last_5_h2h_match_dominance_frame = \
-        get_margin_weighted_last_x_h2h_feature(match_results, min_window_size)
+        get_margin_weighted_last_x_h2h_feature(match_results, window_size)
 
     last_5_matches_dominance_feature, last_5_match_dominance_frame = \
-        get_last_x_matches_dominance_feature(match_results, min_window_size)
+        get_last_x_matches_dominance_feature(match_results, window_size)
 
     # Features END -----------------------------------------------------------------------------------------------------
 
@@ -52,9 +52,14 @@ def estimate(transform_scaler=True, min_season_to_train=2015):
 
     train_df = match_results[match_results.season == __year__]
     feature_cols = ['f_away_team_id', 'f_home_team_id', 'f_ground_id', 'f_home_odds', 'f_away_odds',
-                    'f_home_ground_adv', 'f_away_ground_adv', 'f_last_5_h2h',
-                    'f_last_5_h2h_in_ground', 'f_last_5_away_form', 'f_last_5_home_form',
-                    'f_margin_weighted_last_5_h2h', 'f_last_5_home_dominance', 'f_last_5_away_dominance']
+                    'f_home_ground_adv', 'f_away_ground_adv']
+
+    calculated_stats = [f'f_last_{window_size}_h2h', f'f_last_{window_size}_h2h_in_ground',
+                        f'f_last_{window_size}_away_form', f'f_last_{window_size}_home_form',
+                        f'f_margin_weighted_last_{window_size}_h2h', f'f_last_{window_size}_home_dominance',
+                        f'f_last_{window_size}_away_dominance']
+
+    feature_cols.extend(calculated_stats)
 
     feature_cols_original = feature_cols.copy()
     feature_cols.extend(['game'])
@@ -77,4 +82,4 @@ def estimate(transform_scaler=True, min_season_to_train=2015):
 
 
 # Execute Estimation ---------------------------------------------------------------------------------------------------
-estimate(transform_scaler=True, min_season_to_train=2005)
+estimate(transform_scaler=True, min_season_to_train=2015, window_size=5)
