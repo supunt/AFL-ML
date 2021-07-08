@@ -214,12 +214,12 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
     # this season form -------------------------------------------------------------------------------------------------
     next_round_x = next_round_x.merge(this_season_form_frame, left_on='home_team', right_on='team', how='left')
     next_round_x = next_round_x.rename(columns={"this_season_form": "f_this_season_home_form"})
-    next_round_x = next_round_x.drop(columns=['this_season_results'])
+    next_round_x = next_round_x.rename(columns={"this_season_results": "this_season_home_results"})
     next_round_x['f_this_season_home_form'] = next_round_x['f_this_season_home_form'].fillna(0.0)
 
     next_round_x = next_round_x.merge(this_season_form_frame, left_on='away_team', right_on='team', how='left')
     next_round_x = next_round_x.rename(columns={"this_season_form": "f_this_season_away_form"})
-    next_round_x = next_round_x.drop(columns=['this_season_results'])
+    next_round_x = next_round_x.rename(columns={"this_season_results": "this_season_away_results"})
     next_round_x['f_this_season_away_form'] = next_round_x['f_this_season_away_form'].fillna(0.0)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -230,7 +230,9 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
                        'f_season_weighted_last_5_h2h', 'f_margin_weighted_last_5_h2h',
                        'f_last_5_home_form', 'f_last_5_home_dominance', 'f_last_5_away_form',
                        'f_last_5_away_dominance', 'f_home_odds', 'f_away_odds',
-                       'f_this_season_home_form', 'f_this_season_away_form']
+                       'f_this_season_home_form', 'f_this_season_away_form',
+                       'this_season_home_results', 'this_season_away_results']
+
 
     next_round_x_useful_stats = next_round_x[visualizer_cols]
     # ------------------------------------------------------------------------------------------------------------------
