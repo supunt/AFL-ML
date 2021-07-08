@@ -264,6 +264,11 @@ if __name__ == "__main__":
     # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-9')
     # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-10')
     # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-11')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-12')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-13')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-14')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-15')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-16')
     run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist)
 
     process_results()
