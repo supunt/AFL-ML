@@ -16,7 +16,7 @@ def get_this_season_matches_form_feature(match_results, season):
     all_teams.sort()
     all_unique_teams = set(all_teams)
 
-    last_x_match_form = {team: [] for team in all_unique_teams}
+    this_season_form = {team: [] for team in all_unique_teams}
 
     sub_frame['f_this_season_home_form'] = 0.0
     sub_frame['f_this_season_away_form'] = 0.0
@@ -25,34 +25,34 @@ def get_this_season_matches_form_feature(match_results, season):
         row_home = row['home_team']
         row_away = row['away_team']
 
-        sub_frame.loc[index, 'f_this_season_home_form'] = get_array_sum(last_x_match_form[row_home])
-        sub_frame.loc[index, 'f_this_season_away_form'] = get_array_sum(last_x_match_form[row_away])
+        sub_frame.loc[index, 'f_this_season_home_form'] = get_array_sum(this_season_form[row_home])
+        sub_frame.loc[index, 'f_this_season_away_form'] = get_array_sum(this_season_form[row_away])
 
         if row['result'] == 0:
-            last_x_match_form[row_home].append(0)
-            last_x_match_form[row_away].append(0)
+            this_season_form[row_home].append(0)
+            this_season_form[row_away].append(0)
         elif row['result'] == 1:
-            last_x_match_form[row_home].append(1)
-            last_x_match_form[row_away].append(-1)
+            this_season_form[row_home].append(1)
+            this_season_form[row_away].append(-1)
         elif row['result'] == -1:
-            last_x_match_form[row_home].append(-1)
-            last_x_match_form[row_away].append(1)
+            this_season_form[row_home].append(-1)
+            this_season_form[row_away].append(1)
 
     ret_frame = sub_frame[['game', 'f_this_season_home_form', 'f_this_season_away_form']].copy()
     ret_frame['f_this_season_home_form'] = ret_frame['f_this_season_home_form'].fillna(0.0)
     ret_frame['f_this_season_away_form'] = ret_frame['f_this_season_away_form'].fillna(0.0)
 
-    last_x_match_form_sums = {
+    this_season_form_sums = {
         'team': [],
         'this_season_form': [],
         'this_season_results': []
     }
 
-    for key in last_x_match_form:
-        last_x_match_form_sums['team'].append(key)
-        last_x_match_form_sums['this_season_form'].append(get_array_sum(last_x_match_form[key]))
-        last_x_match_form_sums['this_season_results'].append(str(last_x_match_form[key]))
+    for key in this_season_form:
+        this_season_form_sums['team'].append(key)
+        this_season_form_sums['this_season_form'].append(get_array_sum(this_season_form[key]))
+        this_season_form_sums['this_season_results'].append(str(this_season_form[key]))
 
-    last_x_match_form_frame = pd.DataFrame(last_x_match_form_sums)
+    this_season_form_frame = pd.DataFrame(this_season_form_sums)
 
-    return ret_frame, last_x_match_form_frame
+    return ret_frame, this_season_form_frame
