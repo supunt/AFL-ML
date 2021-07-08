@@ -29,8 +29,11 @@ CREATE OR ALTER VIEW [dbo].[GetAFLPredictions] AS
 		preds.Prediction,
 		pred_Inputs.F_This_Season_Home_Form,
 		pred_Inputs.F_This_Season_Away_Form,
+		pred_Inputs.F_This_Season_h2h,
 		pred_Inputs.This_Season_Home_Results,
+		pred_Inputs.This_Season_Home_Results_Detailed,
 		pred_Inputs.This_Season_Away_Results,
+		pred_Inputs.This_Season_Away_Results_Detailed,
 		res.Result,
 		Accurate = CASE WHEN res.Result = preds.Prediction THEN 1 ELSE 0 END
 	FROM [dbo].[AFL_Predictions] preds

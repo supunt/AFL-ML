@@ -8,6 +8,7 @@ from utils.features.last_x_matches_form_feature import get_last_x_matches_form_f
 from utils.features.margin_weighted_last_x_h2h_feature import get_margin_weighted_last_x_h2h_feature
 from utils.features.last_x_matches_dominance_feature import get_last_x_matches_dominance_feature
 from utils.features.this_season_form_feature import get_this_season_matches_form_feature
+from utils.features.this_season_h2h_feature import get_this_season_h2h_feature
 
 set_load_cached(False)
 
@@ -42,6 +43,8 @@ def estimate(transform_scaler=True, min_season_to_train=2015, window_size=min_wi
 
     this_season_form_feature, this_season_form_frame = get_this_season_matches_form_feature(match_results, 2021)
 
+    this_season_encounter_feature, this_season_encounter_matrix = get_this_season_h2h_feature(match_results, 2021)
+
     # Features END -----------------------------------------------------------------------------------------------------
 
     match_results = match_results.merge(last_5_encounter_feature, on="game")
@@ -51,10 +54,12 @@ def estimate(transform_scaler=True, min_season_to_train=2015, window_size=min_wi
     match_results = match_results.merge(last_5_matches_h2h_dominance_feature, on="game", how="left")
     match_results = match_results.merge(last_5_matches_dominance_feature, on="game", how="left")
     match_results = match_results.merge(this_season_form_feature, on="game", how="left")
+    match_results = match_results.merge(this_season_encounter_feature, on="game", how="left")
 
     # Fill Sub Calc nulls END ------------------------------------------------------------------------------------------
     match_results['f_this_season_home_form'] = match_results['f_this_season_home_form'].fillna(0.0)
     match_results['f_this_season_away_form'] = match_results['f_this_season_away_form'].fillna(0.0)
+    match_results['f_this_season_h2h'] = match_results['f_this_season_h2h'].fillna(0.0)
 
     # Features Concat END ----------------------------------------------------------------------------------------------
 
@@ -66,7 +71,8 @@ def estimate(transform_scaler=True, min_season_to_train=2015, window_size=min_wi
                         f'f_last_{window_size}_away_form', f'f_last_{window_size}_home_form',
                         f'f_margin_weighted_last_{window_size}_h2h', f'f_last_{window_size}_home_dominance',
                         f'f_last_{window_size}_away_dominance',
-                        'f_this_season_home_form', 'f_this_season_away_form']
+                        'f_this_season_home_form', 'f_this_season_away_form',
+                        'f_this_season_h2h']
 
     feature_cols.extend(calculated_stats)
 
