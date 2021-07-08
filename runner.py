@@ -215,11 +215,15 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
     next_round_x = next_round_x.merge(this_season_form_frame, left_on='home_team', right_on='team', how='left')
     next_round_x = next_round_x.rename(columns={"this_season_form": "f_this_season_home_form"})
     next_round_x = next_round_x.rename(columns={"this_season_results": "this_season_home_results"})
+    next_round_x = next_round_x.rename(columns={"this_season_results_detailed": "this_season_home_results_detailed"})
+
     next_round_x['f_this_season_home_form'] = next_round_x['f_this_season_home_form'].fillna(0.0)
 
     next_round_x = next_round_x.merge(this_season_form_frame, left_on='away_team', right_on='team', how='left')
     next_round_x = next_round_x.rename(columns={"this_season_form": "f_this_season_away_form"})
     next_round_x = next_round_x.rename(columns={"this_season_results": "this_season_away_results"})
+    next_round_x = next_round_x.rename(columns={"this_season_results_detailed": "this_season_away_results_detailed"})
+
     next_round_x['f_this_season_away_form'] = next_round_x['f_this_season_away_form'].fillna(0.0)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -231,8 +235,8 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
                        'f_last_5_home_form', 'f_last_5_home_dominance', 'f_last_5_away_form',
                        'f_last_5_away_dominance', 'f_home_odds', 'f_away_odds',
                        'f_this_season_home_form', 'f_this_season_away_form',
-                       'this_season_home_results', 'this_season_away_results']
-
+                       'this_season_home_results', 'this_season_away_results',
+                       'this_season_home_results_detailed', 'this_season_away_results_detailed']
 
     next_round_x_useful_stats = next_round_x[visualizer_cols]
     # ------------------------------------------------------------------------------------------------------------------
@@ -273,22 +277,22 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(f"Persist to Database : {'ENABLED' if args.persist else 'DISABLED'}")
 
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-1')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-2')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-3')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-4')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-5')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-6')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-7')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-8')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-9')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-10')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-11')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-12')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-13')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-14')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-15')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-16')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-1')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-2')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-3')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-4')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-5')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-6')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-7')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-8')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-9')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-10')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-11')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-12')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-13')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-14')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-15')
+    # run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-16')
     run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist)
 
     process_results()

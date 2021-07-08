@@ -30,7 +30,9 @@ CREATE OR ALTER VIEW [dbo].[GetNextWeekPredictions] AS
 		pred_Inputs.F_This_Season_Home_Form as This_Season_Home_Form,
 		pred_Inputs.F_This_Season_Away_Form as This_Season_Away_Form,
 		pred_Inputs.This_Season_Home_Results,
-		pred_Inputs.This_Season_Away_Results
+		pred_Inputs.This_Season_Home_Results_Detailed,
+		pred_Inputs.This_Season_Away_Results,
+		pred_Inputs.This_Season_Away_Results_Detailed
 	FROM [dbo].[AFL_Predictions] preds
 	INNER JOIN [dbo].[AFL_Prediction_Inputs] pred_Inputs ON pred_Inputs.game = preds.game and pred_Inputs.Run_Id_DateTime = preds.Run_Id_DateTime
 	INNER JOIN CTE ON CTE.MaxRunIdDt = pred_Inputs.Run_Id_DateTime

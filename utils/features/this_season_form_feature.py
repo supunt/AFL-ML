@@ -17,6 +17,7 @@ def get_this_season_matches_form_feature(match_results, season):
     all_unique_teams = set(all_teams)
 
     this_season_form = {team: [] for team in all_unique_teams}
+    this_season_results_detailed = {team: [] for team in all_unique_teams}
 
     sub_frame['f_this_season_home_form'] = 0.0
     sub_frame['f_this_season_away_form'] = 0.0
@@ -31,12 +32,21 @@ def get_this_season_matches_form_feature(match_results, season):
         if row['result'] == 0:
             this_season_form[row_home].append(0)
             this_season_form[row_away].append(0)
+
+            this_season_results_detailed[row_home].append({row_away: 0})
+            this_season_results_detailed[row_away].append({row_home: 0})
         elif row['result'] == 1:
             this_season_form[row_home].append(1)
             this_season_form[row_away].append(-1)
+
+            this_season_results_detailed[row_home].append({row_away: 1})
+            this_season_results_detailed[row_away].append({row_home: -1})
         elif row['result'] == -1:
             this_season_form[row_home].append(-1)
             this_season_form[row_away].append(1)
+
+            this_season_results_detailed[row_home].append({row_away: -1})
+            this_season_results_detailed[row_away].append({row_home: 1})
 
     ret_frame = sub_frame[['game', 'f_this_season_home_form', 'f_this_season_away_form']].copy()
     ret_frame['f_this_season_home_form'] = ret_frame['f_this_season_home_form'].fillna(0.0)
@@ -45,13 +55,15 @@ def get_this_season_matches_form_feature(match_results, season):
     this_season_form_sums = {
         'team': [],
         'this_season_form': [],
-        'this_season_results': []
+        'this_season_results': [],
+        'this_season_results_detailed': []
     }
 
     for key in this_season_form:
         this_season_form_sums['team'].append(key)
         this_season_form_sums['this_season_form'].append(get_array_sum(this_season_form[key]))
         this_season_form_sums['this_season_results'].append(str(this_season_form[key]))
+        this_season_form_sums['this_season_results_detailed'].append(str(this_season_results_detailed[key]))
 
     this_season_form_frame = pd.DataFrame(this_season_form_sums)
 
