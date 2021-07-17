@@ -292,31 +292,34 @@ def run_prediction(transform_scaler=True, min_season_to_train=2000, week_id=None
 
 
 # Execute Prediction ---------------------------------------------------------------------------------------------------
+from concurrent.futures import ThreadPoolExecutor
+import concurrent
+
 
 if __name__ == "__main__":
+    max_week = 17
     parser = argparse.ArgumentParser(description='Generate AFL Predictions for next round')
     parser.add_argument('--persist', action='store_true', help='Persist to Database')
+    parser.add_argument('--run_history', action='store_true', help='Persist to Database')
 
     args = parser.parse_args()
     print(f"Persist to Database : {'ENABLED' if args.persist else 'DISABLED'}")
 
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-1')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-2')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-3')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-4')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-5')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-6')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-7')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-8')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-9')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-10')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-11')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-12')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-13')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-14')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-15')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist, week_id='week-16')
-    run_prediction(transform_scaler=True, min_season_to_train=2015, persist=args.persist)
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        futures = {}
+        if args.run_history:
+            print("Executing History....")
+            futures = {executor.submit(run_prediction, True, 2015, f'week-{i}', args.persist): i for i in
+                       range(1, max_week + 1)}
+
+        print("Executing Next week....")
+        futures[executor.submit(run_prediction, True, 2015, None, args.persist)] = ''
+        for future in concurrent.futures.as_completed(futures):
+            week_id = futures[future]
+            try:
+                future.result()
+            except Exception as exc:
+                print('Week : %r generated an exception: %s' % (week_id, exc))
 
     process_results()
 
