@@ -314,6 +314,7 @@ if __name__ == "__main__":
 
         print("Executing Next week....")
         futures[executor.submit(run_prediction, True, 2015, None, args.persist)] = ''
+
         for future in concurrent.futures.as_completed(futures):
             week_id = futures[future]
             try:
