@@ -322,5 +322,8 @@ if __name__ == "__main__":
             except Exception as exc:
                 print('Week : %r generated an exception: %s' % (week_id, exc))
 
+    print("\n---------------------------------------------------------------------------------------------------------")
+    print("Post Process Results")
+    print("---------------------------------------------------------------------------------------------------------")
     process_results()
 
